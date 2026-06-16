@@ -17,3 +17,7 @@ O Grupo Ethos é uma organização comprometida com boas práticas, colaboraçã
 ## Contato
 
 - Email: ogrupoethos@gmail.com
+
+## Licença
+
+Este repositório está sob a licença [MIT](LICENSE).
