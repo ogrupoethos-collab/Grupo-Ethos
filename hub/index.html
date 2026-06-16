@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grupo Ethos</title>
+  <style>
+    :root {
+      --bg:       #080f1a;
+      --bg2:      #0d1726;
+      --surface:  #111e30;
+      --surface2: #16263d;
+      --border:   rgba(56,130,220,0.18);
+      --border2:  rgba(56,130,220,0.32);
+      --blue:     #3882dc;
+      --blue-dim: #1e4f8a;
+      --blue-lit: #6aaaf5;
+      --text:     #e8f0fb;
+      --muted:    #5b7faa;
+      --muted2:   #3a5a82;
+      --radius:   16px;
+      --radius-sm:10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; min-height: 100vh; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      padding: 28px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+    }
+    .logo { padding: 0 10px 24px; }
+    .logo-name { font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.1em; }
+    .logo-sub  { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.12em; margin-top: 3px; }
+
+    .nav-btn {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      cursor: pointer; color: var(--muted);
+      font-size: 0.85rem; font-weight: 500;
+      border: none; background: none; width: 100%; text-align: left;
+      transition: all 0.18s;
+    }
+    .nav-btn:hover { color: var(--text); background: rgba(56,130,220,0.1); }
+    .nav-btn.active { color: var(--blue-lit); background: rgba(56,130,220,0.15); }
+    .nav-btn .ic { font-size: 1rem; width: 18px; text-align: center; }
+
+    /* MAIN */
+    .content { margin-left: 220px; padding: 32px 36px; flex: 1; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .topbar h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+    .date-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 13px; font-size: 0.74rem; color: var(--muted); }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .stat .lbl { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .stat .val { font-size: 1.9rem; font-weight: 700; color: var(--blue-lit); line-height: 1; }
+    .stat .sub { font-size: 0.68rem; color: var(--muted); margin-top: 5px; }
+
+    /* CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
+    .card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
+    .card-head .add-btn { background: rgba(56,130,220,0.15); color: var(--blue-lit); border: 1px solid var(--border2); border-radius: 8px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+    .card-head .add-btn:hover { background: rgba(56,130,220,0.28); }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 10px 18px; font-size: 0.67rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); background: var(--bg2); }
+    td { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(56,130,220,0.06); }
+
+    /* EDITABLE */
+    [contenteditable] { outline: none; border-radius: 6px; padding: 2px 6px; margin: -2px -6px; transition: background 0.15s; cursor: text; }
+    [contenteditable]:hover { background: rgba(56,130,220,0.12); }
+    [contenteditable]:focus { background: rgba(56,130,220,0.2); box-shadow: 0 0 0 1.5px var(--blue-dim); }
+
+    /* BADGES */
+    .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+    .b-alta     { background: rgba(220,60,60,0.18); color: #f07070; }
+    .b-media    { background: rgba(220,170,40,0.18); color: #d4aa50; }
+    .b-baixa    { background: rgba(56,130,220,0.18); color: var(--blue-lit); }
+    .b-ativo    { background: rgba(40,180,100,0.18); color: #5dcc8a; }
+    .b-pendente { background: rgba(90,100,120,0.25); color: var(--muted); }
+    .b-revisao  { background: rgba(220,170,40,0.18); color: #d4aa50; }
+    .b-entregue { background: rgba(40,180,100,0.18); color: #5dcc8a; }
+
+    /* SELECT BADGE */
+    .badge-sel { background: none; border: none; cursor: pointer; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; appearance: none; -webkit-appearance: none; }
+
+    /* PROGRESS */
+    .prog-wrap { display: flex; align-items: center; gap: 8px; }
+    .prog { width: 80px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+    .prog .fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.4s; }
+    .prog-pct { font-size: 0.7rem; color: var(--muted); min-width: 28px; }
+
+    /* AVATAR */
+    .av { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-dim); color: var(--blue-lit); font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* TASKS */
+    .task { display: flex; align-items: flex-start; gap: 12px; padding: 13px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
+    .task:last-child { border-bottom: none; }
+    .task:hover { background: rgba(56,130,220,0.06); }
+    .task-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.2s; }
+    .task.done .task-circle { background: var(--blue); border-color: var(--blue); }
+    .task.done .task-circle::after { content: '✓'; font-size: 9px; color: #fff; font-weight: 900; }
+    .task.done .task-name { text-decoration: line-through; color: var(--muted); }
+    .task-name { font-size: 0.85rem; }
+    .task-meta { font-size: 0.71rem; color: var(--muted); margin-top: 2px; }
+
+    /* CALENDAR */
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; padding: 18px; }
+    .cal-dname { text-align: center; font-size: 0.65rem; font-weight: 600; color: var(--muted); padding: 4px 0 8px; text-transform: uppercase; }
+    .cal-day { aspect-ratio: 1; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--muted); position: relative; }
+    .cal-day.empty { opacity: 0; }
+    .cal-day.cur { color: var(--text); }
+    .cal-day.today { background: var(--blue); color: #fff; font-weight: 700; }
+    .cal-day.has-event:not(.today) { background: var(--surface2); color: var(--blue-lit); font-weight: 600; border: 1px solid var(--border2); }
+    .cal-day .dot { width: 4px; height: 4px; background: var(--blue-lit); border-radius: 50%; position: absolute; bottom: 3px; }
+    .cal-day.today .dot { background: rgba(255,255,255,0.6); }
+
+    /* ADD ROW */
+    .add-row { padding: 10px 18px; border-top: 1px solid var(--border); }
+    .add-row input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 12px; font-size: 0.82rem; width: 100%; outline: none; font-family: inherit; }
+    .add-row input:focus { border-color: var(--blue-dim); }
+    .add-row input::placeholder { color: var(--muted); }
+
+    @media (max-width: 700px) {
+      .sidebar { width: 56px; padding: 16px 8px; }
+      .nav-btn span, .logo-name, .logo-sub { display: none; }
+      .content { margin-left: 56px; padding: 16px; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">GRUPO ETHOS</div>
+      <div class="logo-sub">PRODUÇÃO DE VÍDEO</div>
+    </div>
+    <button class="nav-btn active" onclick="go('resumo',this)"><span class="ic">◈</span><span>Resumo</span></button>
+    <button class="nav-btn" onclick="go('clientes',this)"><span class="ic">◎</span><span>Clientes</span></button>
+    <button class="nav-btn" onclick="go('pipeline',this)"><span class="ic">▷</span><span>Pipeline</span></button>
+    <button class="nav-btn" onclick="go('calendario',this)"><span class="ic">▦</span><span>Calendário</span></button>
+    <button class="nav-btn" onclick="go('tarefas',this)"><span class="ic">◻</span><span>Tarefas</span></button>
+  </aside>
+
+  <main class="content">
+
+    <!-- RESUMO -->
+    <div class="section active" id="resumo">
+      <div class="topbar">
+        <h1>Visão Geral</h1>
+        <span class="date-chip" id="data-hoje"></span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="lbl">Clientes ativos</div><div class="val">10</div><div class="sub">em produção</div></div>
+        <div class="stat"><div class="lbl">Vídeos contratados</div><div class="val">139</div><div class="sub">+ Kaiser ilimitado</div></div>
+        <div class="stat"><div class="lbl">Alta prioridade</div><div class="val">4</div><div class="sub">clientes</div></div>
+        <div class="stat"><div class="lbl">Tarefas pendentes</div><div class="val" id="count-pend">10</div><div class="sub">esta semana</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">Clientes por prioridade</div>
+        <table>
+          <thead><tr><th>Cliente</th><th>Serviço</th><th>Prioridade</th><th>Progresso</th></tr></thead>
+          <tbody id="resumo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="section" id="clientes">
+      <div class="topbar"><h1>Clientes</h1></div>
+      <div class="card">
+        <div class="card-head">
+          <span>10 clientes ativos</span>
+          <button class="add-btn" onclick="addCliente()">+ Adicionar</button>
+        </div>
+        <table>
+          <thead><tr><th></th><th>Cliente</th><th>Serviço</th><th>Total</th><th>Entregues</th><th>Restantes</th><th>Prioridade</th><th>Status</th></tr></thead>
+          <tbody id="clientes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="section" id="pipeline">
+      <div class="topbar"><h1>Pipeline de Vídeos</h1></div>
+      <div class="card">
+        <div class="card-head">
+          <span>Vídeos em produção</span>
+          <button class="add-btn" onclick="addVideo()">+ Adicionar</button>
+        </div>
+        <table>
+          <thead><tr><th>Vídeo / Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th></tr></thead>
+          <tbody id="pipeline-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDÁRIO -->
+    <div class="section" id="calendario">
+      <div class="topbar"><h1>Calendário</h1></div>
+      <div class="card">
+        <div class="card-head" id="mes-label"></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">Próximas entregas</div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">Reels semana 1</div><div class="task-meta">Doutor Fabiano · 20/06</div></div></div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">TikTok lote 01</div><div class="task-meta">Amendoeira · 25/06</div></div></div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">Conteúdo mensal junho</div><div class="task-meta">Ótica Kaiser · 30/06</div></div></div>
+      </div>
+    </div>
+
+    <!-- TAREFAS -->
+    <div class="section" id="tarefas">
+      <div class="topbar"><h1>Tarefas da Equipe</h1></div>
+      <div class="card">
+        <div class="card-head">
+          <span id="tarefas-lbl">10 pendentes</span>
+          <button class="add-btn" onclick="addTarefa()">+ Adicionar</button>
+        </div>
+        <div id="tarefas-list"></div>
+        <div class="add-row">
+          <input id="nova-tarefa" placeholder="Nova tarefa... (Enter para salvar)" onkeydown="if(event.key==='Enter')saveTarefa()" />
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const clientes = [
+  { av:'VW', nome:'Vinícius (Workana)', servico:'Pacote Shorts',        total:50,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
+  { av:'DF', nome:'Doutor Fabiano',     servico:'Conteúdo Saúde',       total:20,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
+  { av:'AM', nome:'Amendoeira',         servico:'TikTok + YouTube',     total:20,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
+  { av:'OK', nome:'Ótica Kaiser',       servico:'Conteúdo Mensal',      total:null,entregues:null,prioridade:'Alta', status:'Ativo' },
+  { av:'CS', nome:'Conecta Soluções',   servico:'Edições Comerciais',   total:12,  entregues:0,  prioridade:'Média', status:'Ativo' },
+  { av:'G3', nome:'G3',                 servico:'Institucional + Reels',total:3,   entregues:0,  prioridade:'Média', status:'Ativo' },
+  { av:'ED', nome:'Eduarda',            servico:'Conteúdo Estético',    total:20,  entregues:0,  prioridade:'Média', status:'Ativo' },
+  { av:'CA', nome:'Candy',              servico:'Conteúdo Marca',       total:6,   entregues:0,  prioridade:'Média', status:'Ativo' },
+  { av:'LN', nome:'Luanne Nutri',       servico:'Conteúdo Nutrição',    total:4,   entregues:0,  prioridade:'Média', status:'Ativo' },
+  { av:'AD', nome:'Adriano',            servico:'Vídeos Comerciais',    total:4,   entregues:0,  prioridade:'Baixa', status:'Ativo' },
+];
+
+const videos = [
+  { nome:'Conteúdo mensal junho',   cliente:'Ótica Kaiser',       resp:'—', status:'Em revisão' },
+  { nome:'Reel semana 1',           cliente:'Doutor Fabiano',     resp:'—', status:'Pendente' },
+  { nome:'TikTok lote 01',          cliente:'Amendoeira',         resp:'—', status:'Pendente' },
+  { nome:'Short pack #1',           cliente:'Vinícius (Workana)', resp:'—', status:'Pendente' },
+  { nome:'Vídeo institucional 01',  cliente:'G3',                 resp:'—', status:'Pendente' },
+  { nome:'Edição comercial 01',     cliente:'Conecta Soluções',   resp:'—', status:'Pendente' },
+  { nome:'Vídeo estético 01',       cliente:'Eduarda',            resp:'—', status:'Pendente' },
+  { nome:'Vídeo marca 01',          cliente:'Candy',              resp:'—', status:'Pendente' },
+  { nome:'Conteúdo nutrição 01',    cliente:'Luanne Nutri',       resp:'—', status:'Pendente' },
+  { nome:'Vídeo comercial 01',      cliente:'Adriano',            resp:'—', status:'Pendente' },
+];
+
+const tarefas = [
+  { txt:'Editar reels Doutor Fabiano semana 1', meta:'Doutor Fabiano · Alta',      done:false },
+  { txt:'Montar lote TikTok Amendoeira',        meta:'Amendoeira · Alta',          done:false },
+  { txt:'Revisar conteúdo mensal Ótica Kaiser', meta:'Ótica Kaiser · Alta',        done:false },
+  { txt:'Iniciar pack Shorts Vinícius',         meta:'Vinícius (Workana) · Alta',  done:false },
+  { txt:'Editar vídeo institucional G3',        meta:'G3 · Média',                 done:false },
+  { txt:'Produzir conteúdo estético Eduarda',   meta:'Eduarda · Média',            done:false },
+  { txt:'Edições comerciais Conecta Soluções',  meta:'Conecta Soluções · Média',   done:false },
+  { txt:'Vídeo de marca Candy',                 meta:'Candy · Média',              done:false },
+  { txt:'Conteúdo nutrição Luanne Nutri',       meta:'Luanne Nutri · Média',       done:false },
+  { txt:'Vídeo comercial Adriano',              meta:'Adriano · Baixa',            done:false },
+];
+
+// ── BADGES ────────────────────────────────────────────────────────
+const priorClasses = { 'Alta':'b-alta','Média':'b-media','Baixa':'b-baixa' };
+const statusClasses = { 'Ativo':'b-ativo','Inativo':'b-pendente' };
+const videoStatus = ['Pendente','Em edição','Em revisão','Entregue'];
+const videoClasses = { 'Pendente':'b-pendente','Em edição':'b-media','Em revisão':'b-revisao','Entregue':'b-entregue' };
+
+function pct(c) {
+  if (!c.total) return 100;
+  return Math.round((c.entregues / c.total) * 100);
+}
+
+// ── RENDER RESUMO ─────────────────────────────────────────────────
+function renderResumo() {
+  const tb = document.getElementById('resumo-tbody');
+  tb.innerHTML = clientes.map(c => `
+    <tr>
+      <td><b>${c.nome}</b></td>
+      <td>${c.servico}</td>
+      <td><span class="badge ${priorClasses[c.prioridade]}">${c.prioridade}</span></td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog"><div class="fill" style="width:${pct(c)}%"></div></div>
+          <span class="prog-pct">${c.total ? pct(c)+'%' : '∞'}</span>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ── RENDER CLIENTES ───────────────────────────────────────────────
+function renderClientes() {
+  const tb = document.getElementById('clientes-tbody');
+  tb.innerHTML = clientes.map((c,i) => `
+    <tr>
+      <td><div class="av">${c.av}</div></td>
+      <td><b contenteditable onblur="clientes[${i}].nome=this.textContent;renderResumo()">${c.nome}</b></td>
+      <td><span contenteditable onblur="clientes[${i}].servico=this.textContent;renderResumo()">${c.servico}</span></td>
+      <td><span contenteditable onblur="clientes[${i}].total=+this.textContent||null;renderResumo()">${c.total??'∞'}</span></td>
+      <td><span contenteditable onblur="clientes[${i}].entregues=+this.textContent||0;renderResumo()">${c.entregues??'—'}</span></td>
+      <td>${c.total ? c.total - c.entregues : '—'}</td>
+      <td>
+        <select class="badge badge-sel ${priorClasses[c.prioridade]}" onchange="clientes[${i}].prioridade=this.value;renderClientes();renderResumo()">
+          ${['Alta','Média','Baixa'].map(p=>`<option ${p===c.prioridade?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="badge badge-sel ${statusClasses[c.status]}" onchange="clientes[${i}].status=this.value;renderClientes()">
+          ${['Ativo','Inativo'].map(s=>`<option ${s===c.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function addCliente() {
+  clientes.push({ av:'NV', nome:'Novo cliente', servico:'Serviço', total:0, entregues:0, prioridade:'Média', status:'Ativo' });
+  renderClientes(); renderResumo();
+}
+
+// ── RENDER PIPELINE ───────────────────────────────────────────────
+function renderPipeline() {
+  const tb = document.getElementById('pipeline-tbody');
+  tb.innerHTML = videos.map((v,i) => `
+    <tr>
+      <td><span contenteditable onblur="videos[${i}].nome=this.textContent">${v.nome}</span></td>
+      <td><span contenteditable onblur="videos[${i}].cliente=this.textContent">${v.cliente}</span></td>
+      <td><span contenteditable onblur="videos[${i}].resp=this.textContent">${v.resp}</span></td>
+      <td>
+        <select class="badge badge-sel ${videoClasses[v.status]}" onchange="videos[${i}].status=this.value;renderPipeline()">
+          ${videoStatus.map(s=>`<option ${s===v.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function addVideo() {
+  videos.push({ nome:'Novo vídeo', cliente:'—', resp:'—', status:'Pendente' });
+  renderPipeline();
+}
+
+// ── TAREFAS ───────────────────────────────────────────────────────
+function renderTarefas() {
+  const list = document.getElementById('tarefas-list');
+  list.innerHTML = tarefas.map((t,i) => `
+    <div class="task ${t.done?'done':''}" onclick="toggleTarefa(${i})">
+      <div class="task-circle"></div>
+      <div>
+        <div class="task-name" contenteditable onclick="event.stopPropagation()" onblur="tarefas[${i}].txt=this.textContent">${t.txt}</div>
+        <div class="task-meta">${t.meta}</div>
+      </div>
+    </div>`).join('');
+  const pend = tarefas.filter(t=>!t.done).length;
+  document.getElementById('count-pend').textContent = pend;
+  document.getElementById('tarefas-lbl').textContent = pend + ' pendentes';
+}
+
+function toggleTarefa(i) { tarefas[i].done = !tarefas[i].done; renderTarefas(); }
+
+function addTarefa() { document.getElementById('nova-tarefa').focus(); }
+function saveTarefa() {
+  const inp = document.getElementById('nova-tarefa');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  tarefas.push({ txt, meta:'Geral', done:false });
+  inp.value = '';
+  renderTarefas();
+}
+
+// ── NAVEGAÇÃO ─────────────────────────────────────────────────────
+function go(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── CALENDÁRIO ────────────────────────────────────────────────────
+const hoje = new Date();
+const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const sem = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+document.getElementById('mes-label').textContent = meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+document.getElementById('data-hoje').textContent = hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+const grid = document.getElementById('cal-grid');
+sem.forEach(d=>{ const e=document.createElement('div'); e.className='cal-dname'; e.textContent=d; grid.appendChild(e); });
+const ini = new Date(hoje.getFullYear(),hoje.getMonth(),1);
+const tot = new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();
+const evts = [20,25,30];
+for(let i=0;i<ini.getDay();i++){ const e=document.createElement('div'); e.className='cal-day empty'; grid.appendChild(e); }
+for(let d=1;d<=tot;d++){
+  const e=document.createElement('div'); e.className='cal-day cur';
+  if(d===hoje.getDate()) e.classList.add('today');
+  if(evts.includes(d)){ e.classList.add('has-event'); const dot=document.createElement('div'); dot.className='dot'; e.appendChild(dot); }
+  e.append(d); grid.appendChild(e);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+renderResumo();
+renderClientes();
+renderPipeline();
+renderTarefas();
+</script>
+</body>
+</html>
