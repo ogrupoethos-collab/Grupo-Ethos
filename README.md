@@ -1,18 +1,35 @@
 # Grupo Ethos
 
-Repositório oficial do Grupo Ethos.
+Agência de produção de conteúdo em vídeo — TikTok, YouTube, Reels e Shorts.
 
-## Sobre
+## Clientes Ativos
 
-O Grupo Ethos é uma organização comprometida com boas práticas, colaboração e impacto positivo.
+| Cliente | Serviço | Quantidade | Prioridade |
+|---|---|---|---|
+| Amendoeira | TikTok + YouTube | 20 vídeos | Alta |
+| G3 | Institucional + Reels | 3 vídeos | Média |
+| Ótica Kaiser | Conteúdo Mensal | Ilimitado | Alta |
+| Conecta Soluções | Edições Comerciais | 12 vídeos | Média |
+| Vinícius (Workana) | Pacote Shorts | 50 vídeos | Alta |
+| Doutor Fabiano | Conteúdo Saúde | 20 vídeos/mês | Alta |
+| Eduarda | Conteúdo Estético | 20 vídeos | Média |
+| Adriano | Vídeos Comerciais | 4 vídeos | Baixa |
+| Candy | Conteúdo Marca | 6 vídeos | Média |
+| Luanne Nutri | Conteúdo Nutrição | 4 vídeos | Média |
+
+## Estrutura do Repositório
+
+```
+📁 clientes/   — documentação individual de cada cliente
+📁 producao/   — pipeline e controle de vídeos
+```
 
 ## Como contribuir
 
-1. Faça um fork deste repositório
-2. Crie uma branch para sua feature: `git checkout -b minha-feature`
-3. Faça commit das suas alterações: `git commit -m "Adiciona minha feature"`
-4. Envie para a branch: `git push origin minha-feature`
-5. Abra um Pull Request
+1. Crie uma branch: `git checkout -b minha-feature`
+2. Faça commit: `git commit -m "Descrição da mudança"`
+3. Envie: `git push origin minha-feature`
+4. Abra um Pull Request
 
 ## Contato
 
