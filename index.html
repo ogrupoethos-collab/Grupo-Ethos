@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grupo Ethos</title>
+  <style>
+    :root {
+      --blue-900: #042C53;
+      --blue-800: #0C447C;
+      --blue-600: #185FA5;
+      --blue-400: #378ADD;
+      --blue-200: #85B7EB;
+      --blue-100: #B5D4F4;
+      --blue-50:  #E6F1FB;
+      --bg:       #f0f6fc;
+      --surface:  #ffffff;
+      --surface2: #f7f9fc;
+      --text:     #0a1929;
+      --muted:    #5a7a99;
+      --border:   rgba(55,138,221,0.13);
+      --radius:   18px;
+      --radius-sm: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 240px;
+      background: var(--blue-900);
+      padding: 32px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 10;
+    }
+    .logo {
+      padding: 0 12px 28px;
+    }
+    .logo-name { font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: 0.1em; }
+    .logo-sub { font-size: 0.7rem; color: var(--blue-200); letter-spacing: 0.12em; margin-top: 2px; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      color: var(--blue-200);
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.18s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .nav-item.active { background: var(--blue-600); color: #fff; }
+    .nav-item .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+    /* CONTENT */
+    .content { margin-left: 240px; padding: 36px 40px; flex: 1; max-width: 900px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    .topbar h1 { font-size: 1.5rem; font-weight: 700; color: var(--blue-900); }
+    .date-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+    .stat .s-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .stat .s-value { font-size: 2rem; font-weight: 700; color: var(--blue-600); line-height: 1; }
+    .stat .s-sub { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+
+    /* CARDS */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .card-head {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 11px 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    td { padding: 13px 20px; border-bottom: 1px solid var(--border); font-size: 0.87rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--blue-50); }
+
+    /* BADGES */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .b-alta    { background: #fff0f0; color: #c0392b; }
+    .b-media   { background: #fff8e6; color: #b07d0a; }
+    .b-baixa   { background: var(--blue-50); color: var(--blue-600); }
+    .b-ativo   { background: #e8f7ef; color: #1a7a45; }
+    .b-pendente{ background: var(--surface2); color: var(--muted); }
+    .b-revisao { background: #fff8e6; color: #b07d0a; }
+    .b-entregue{ background: #e8f7ef; color: #1a7a45; }
+
+    /* PROGRESS */
+    .prog { width: 90px; height: 6px; background: var(--blue-50); border-radius: 4px; overflow: hidden; }
+    .prog .fill { height: 100%; background: var(--blue-400); border-radius: 4px; }
+
+    /* AVATAR */
+    .av {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--blue-50);
+      color: var(--blue-600);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* TASKS */
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .task:last-child { border-bottom: none; }
+    .task:hover { background: var(--blue-50); }
+    .task-circle {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--blue-200);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .task.done .task-circle {
+      background: var(--blue-400);
+      border-color: var(--blue-400);
+    }
+    .task.done .task-circle::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 900; }
+    .task.done .task-name { text-decoration: line-through; color: var(--muted); }
+    .task-name { font-size: 0.87rem; }
+    .task-meta { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+
+    /* CALENDAR */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 20px; }
+    .cal-dname { text-align: center; font-size: 0.68rem; font-weight: 600; color: var(--muted); padding: 4px 0 8px; text-transform: uppercase; }
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      color: var(--text);
+      position: relative;
+      cursor: default;
+    }
+    .cal-day.empty { opacity: 0; pointer-events: none; }
+    .cal-day.today { background: var(--blue-600); color: #fff; font-weight: 700; }
+    .cal-day.has-event:not(.today) { background: var(--blue-50); color: var(--blue-600); font-weight: 600; }
+    .cal-day .dot { width: 4px; height: 4px; background: var(--blue-400); border-radius: 50%; position: absolute; bottom: 4px; }
+    .cal-day.today .dot { background: rgba(255,255,255,0.7); }
+
+    @media (max-width: 700px) {
+      .sidebar { width: 64px; padding: 20px 8px; }
+      .nav-item span { display: none; }
+      .logo-name, .logo-sub { display: none; }
+      .content { margin-left: 64px; padding: 20px 16px; }
+      .stats { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">GRUPO ETHOS</div>
+      <div class="logo-sub">PRODUÇÃO DE CONTEÚDO</div>
+    </div>
+    <button class="nav-item active" onclick="showTab('resumo',this)">
+      <span class="icon">⬡</span><span>Resumo</span>
+    </button>
+    <button class="nav-item" onclick="showTab('clientes',this)">
+      <span class="icon">◎</span><span>Clientes</span>
+    </button>
+    <button class="nav-item" onclick="showTab('pipeline',this)">
+      <span class="icon">▷</span><span>Pipeline</span>
+    </button>
+    <button class="nav-item" onclick="showTab('calendario',this)">
+      <span class="icon">▦</span><span>Calendário</span>
+    </button>
+    <button class="nav-item" onclick="showTab('tarefas',this)">
+      <span class="icon">◻</span><span>Tarefas</span>
+    </button>
+  </aside>
+
+  <main class="content">
+
+    <!-- RESUMO -->
+    <div class="section active" id="resumo">
+      <div class="topbar">
+        <h1>Visão Geral</h1>
+        <span class="date-pill" id="data-hoje"></span>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="s-label">Clientes ativos</div>
+          <div class="s-value">10</div>
+          <div class="s-sub">em produção</div>
+        </div>
+        <div class="stat">
+          <div class="s-label">Vídeos contratados</div>
+          <div class="s-value">139</div>
+          <div class="s-sub">+ Kaiser ilimitado</div>
+        </div>
+        <div class="stat">
+          <div class="s-label">Alta prioridade</div>
+          <div class="s-value">4</div>
+          <div class="s-sub">clientes</div>
+        </div>
+        <div class="stat">
+          <div class="s-label">Tarefas pendentes</div>
+          <div class="s-value" id="count-pendentes">10</div>
+          <div class="s-sub">esta semana</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">Clientes por prioridade</div>
+        <table>
+          <thead><tr><th>Cliente</th><th>Serviço</th><th>Prioridade</th><th>Progresso</th></tr></thead>
+          <tbody>
+            <tr><td><b>Vinícius (Workana)</b></td><td>Pacote Shorts</td><td><span class="badge b-alta">Alta</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Doutor Fabiano</b></td><td>Conteúdo Saúde</td><td><span class="badge b-alta">Alta</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Amendoeira</b></td><td>TikTok + YouTube</td><td><span class="badge b-alta">Alta</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Ótica Kaiser</b></td><td>Conteúdo Mensal</td><td><span class="badge b-alta">Alta</span></td><td><div class="prog"><div class="fill" style="width:100%"></div></div></td></tr>
+            <tr><td><b>Conecta Soluções</b></td><td>Edições Comerciais</td><td><span class="badge b-media">Média</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>G3</b></td><td>Institucional + Reels</td><td><span class="badge b-media">Média</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Eduarda</b></td><td>Conteúdo Estético</td><td><span class="badge b-media">Média</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Candy</b></td><td>Conteúdo Marca</td><td><span class="badge b-media">Média</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Luanne Nutri</b></td><td>Conteúdo Nutrição</td><td><span class="badge b-media">Média</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>Adriano</b></td><td>Vídeos Comerciais</td><td><span class="badge b-baixa">Baixa</span></td><td><div class="prog"><div class="fill" style="width:0%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="section" id="clientes">
+      <div class="topbar"><h1>Clientes</h1></div>
+      <div class="card">
+        <table>
+          <thead><tr><th></th><th>Cliente</th><th>Serviço</th><th>Total</th><th>Restantes</th><th>Prioridade</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="av">AM</div></td><td><b>Amendoeira</b></td><td>TikTok + YouTube</td><td>20</td><td>20</td><td><span class="badge b-alta">Alta</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">G3</div></td><td><b>G3</b></td><td>Institucional + Reels</td><td>3</td><td>3</td><td><span class="badge b-media">Média</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">OK</div></td><td><b>Ótica Kaiser</b></td><td>Conteúdo Mensal</td><td>∞</td><td>—</td><td><span class="badge b-alta">Alta</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">CS</div></td><td><b>Conecta Soluções</b></td><td>Edições Comerciais</td><td>12</td><td>12</td><td><span class="badge b-media">Média</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">VW</div></td><td><b>Vinícius (Workana)</b></td><td>Pacote Shorts</td><td>50</td><td>50</td><td><span class="badge b-alta">Alta</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">DF</div></td><td><b>Doutor Fabiano</b></td><td>Conteúdo Saúde</td><td>20/mês</td><td>20</td><td><span class="badge b-alta">Alta</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">ED</div></td><td><b>Eduarda</b></td><td>Conteúdo Estético</td><td>20</td><td>20</td><td><span class="badge b-media">Média</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">AD</div></td><td><b>Adriano</b></td><td>Vídeos Comerciais</td><td>4</td><td>4</td><td><span class="badge b-baixa">Baixa</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">CA</div></td><td><b>Candy</b></td><td>Conteúdo Marca</td><td>6</td><td>6</td><td><span class="badge b-media">Média</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+            <tr><td><div class="av">LN</div></td><td><b>Luanne Nutri</b></td><td>Conteúdo Nutrição</td><td>4</td><td>4</td><td><span class="badge b-media">Média</span></td><td><span class="badge b-ativo">Ativo</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="section" id="pipeline">
+      <div class="topbar"><h1>Pipeline de Vídeos</h1></div>
+      <div class="card">
+        <table>
+          <thead><tr><th>Vídeo / Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Conteúdo mensal junho</td><td>Ótica Kaiser</td><td>—</td><td><span class="badge b-revisao">Em revisão</span></td></tr>
+            <tr><td>Reel semana 1</td><td>Doutor Fabiano</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>TikTok lote 01</td><td>Amendoeira</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Short pack #1</td><td>Vinícius (Workana)</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Vídeo institucional 01</td><td>G3</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Edição comercial 01</td><td>Conecta Soluções</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Vídeo estético 01</td><td>Eduarda</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Vídeo marca 01</td><td>Candy</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Conteúdo nutrição 01</td><td>Luanne Nutri</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+            <tr><td>Vídeo comercial 01</td><td>Adriano</td><td>—</td><td><span class="badge b-pendente">Pendente</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CALENDÁRIO -->
+    <div class="section" id="calendario">
+      <div class="topbar"><h1>Calendário</h1></div>
+      <div class="card">
+        <div class="card-head" id="mes-label"></div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">Próximas entregas</div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">Reels semana 1</div><div class="task-meta">Doutor Fabiano · 20/06</div></div></div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">TikTok lote 01</div><div class="task-meta">Amendoeira · 25/06</div></div></div>
+        <div class="task"><div class="task-circle"></div><div><div class="task-name">Conteúdo mensal junho</div><div class="task-meta">Ótica Kaiser · 30/06</div></div></div>
+      </div>
+    </div>
+
+    <!-- TAREFAS -->
+    <div class="section" id="tarefas">
+      <div class="topbar"><h1>Tarefas da Equipe</h1></div>
+      <div class="card">
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Editar reels Doutor Fabiano semana 1</div><div class="task-meta">Doutor Fabiano · Alta</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Montar lote TikTok Amendoeira</div><div class="task-meta">Amendoeira · Alta</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Revisar conteúdo mensal Ótica Kaiser</div><div class="task-meta">Ótica Kaiser · Alta</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Iniciar pack Shorts Vinícius</div><div class="task-meta">Vinícius (Workana) · Alta</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Editar vídeo institucional G3</div><div class="task-meta">G3 · Média</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Produzir conteúdo estético Eduarda</div><div class="task-meta">Eduarda · Média</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Edições comerciais Conecta Soluções</div><div class="task-meta">Conecta Soluções · Média</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Vídeo de marca Candy</div><div class="task-meta">Candy · Média</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Conteúdo nutrição Luanne Nutri</div><div class="task-meta">Luanne Nutri · Média</div></div></div>
+        <div class="task" onclick="toggle(this)"><div class="task-circle"></div><div><div class="task-name">Vídeo comercial Adriano</div><div class="task-meta">Adriano · Baixa</div></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const hoje = new Date();
+  document.getElementById('data-hoje').textContent =
+    hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+
+  function showTab(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggle(el) {
+    el.classList.toggle('done');
+    const total = document.querySelectorAll('.task').length;
+    const done  = document.querySelectorAll('.task.done').length;
+    document.getElementById('count-pendentes').textContent = total - done;
+  }
+
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const semana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  document.getElementById('mes-label').textContent = meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
+  const grid = document.getElementById('cal-grid');
+  semana.forEach(d => { const e = document.createElement('div'); e.className='cal-dname'; e.textContent=d; grid.appendChild(e); });
+  const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const tot = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0).getDate();
+  const events = [20,25,30];
+  for (let i=0;i<ini.getDay();i++) { const e=document.createElement('div'); e.className='cal-day empty'; e.textContent='·'; grid.appendChild(e); }
+  for (let d=1;d<=tot;d++) {
+    const e=document.createElement('div'); e.className='cal-day';
+    if (d===hoje.getDate()) e.classList.add('today');
+    if (events.includes(d)) { e.classList.add('has-event'); const dot=document.createElement('div'); dot.className='dot'; e.appendChild(dot); }
+    e.append(d); grid.appendChild(e);
+  }
+</script>
+</body>
+</html>
