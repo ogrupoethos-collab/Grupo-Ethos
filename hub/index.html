@@ -288,9 +288,7 @@ td.neg{text-align:right;color:var(--red);font-weight:600;}
   <button class="nav-btn" onclick="go('tarefas',this)"><span class="ic">◻</span><span>Tarefas</span></button>
   <div class="sb-footer">
     <span class="sb-date" id="sb-date"></span>
-    <div id="sync-status" class="sync-pill loading" onclick="syncSheets()" title="Clique para sincronizar">
-      <div class="sync-dot pulse"></div><span id="sync-txt">Sincronizando...</span>
-    </div>
+    <div class="sync-pill ok"><div class="sync-dot"></div><span>Salvo localmente</span></div>
   </div>
 </aside>
 
@@ -547,9 +545,7 @@ td.neg{text-align:right;color:var(--red);font-weight:600;}
 </div>
 
 <script>
-// ══ CONFIG ══
-const SHEET_ID = '1gSK0EDFaX_ClM0NMN14-rbfGkD008qqX9FZaArUwsU8';
-const GVZ = (sheet) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+// ══ CONFIG ══ (modo local — sem dependências externas)
 
 // ══ LOCAL STATE (localStorage) ══
 const LS = {
@@ -624,70 +620,6 @@ let agenda    = LS.get('agenda')    || [];
 
 function save(){ LS.set('clientes',clientes); LS.set('videos',videos); LS.set('receitas',receitas); LS.set('custos',custos); LS.set('tarefas',tarefas); LS.set('agenda',agenda); }
 
-// ══ GOOGLE SHEETS SYNC ══
-async function parseSheet(sheet){
-  const url = GVZ(sheet);
-  const res = await fetch(url);
-  const txt = await res.text();
-  const json = JSON.parse(txt.replace(/^[^(]+\(|\);?$/g,''));
-  const cols = json.table.cols.map(c=>c.label.toLowerCase().trim());
-  return json.table.rows.map(r=>{
-    const obj={};
-    r.c.forEach((cell,i)=>{ obj[cols[i]] = cell ? cell.v : ''; });
-    return obj;
-  }).filter(r=>Object.values(r).some(v=>v!==''&&v!==null));
-}
-
-async function syncSheets(){
-  setSyncStatus('loading','Sincronizando...');
-  try {
-    const [sc, sv, sf] = await Promise.allSettled([
-      parseSheet('clientes'),
-      parseSheet('videos'),
-      parseSheet('financeiro'),
-    ]);
-
-    let updated = false;
-    if(sc.status==='fulfilled' && sc.value.length>0){
-      clientes = sc.value.map(r=>({
-        nome: r.nome||'', servico: r.servico||'', total: r.total||null,
-        entregues: r.entregues||0, prioridade: r.prioridade||'Média',
-        status: r.status||'Ativo', drive: r.drive_link||r.drive||''
-      })); updated=true;
-    }
-    if(sv.status==='fulfilled' && sv.value.length>0){
-      videos = sv.value.map(r=>({
-        nome: r.nome||'', cliente: r.cliente||'', resp: r.responsavel||'—',
-        link: r.link_editado||'', status: r.status||'Pendente', prazo: r.prazo||''
-      })); updated=true;
-    }
-    if(sf.status==='fulfilled' && sf.value.length>0){
-      const rec=[],cus=[];
-      sf.value.forEach(r=>{
-        if(r.tipo==='receita'||r.tipo==='Receita') rec.push({cliente:r.cliente||'',desc:r.descricao||'',valor:parseFloat(r.valor)||0,status:r.status||'A receber'});
-        else cus.push({desc:r.descricao||'',cat:r.categoria||'Outro',valor:parseFloat(r.valor)||0,status:r.status||'A pagar'});
-      });
-      if(rec.length>0) receitas=rec;
-      if(cus.length>0) custos=cus;
-      updated=true;
-    }
-
-    if(updated) save();
-    setSyncStatus('ok','Sheets sincronizado');
-    renderAll();
-  } catch(e){
-    setSyncStatus('err','Erro — usando dados locais');
-    renderAll();
-  }
-}
-
-function setSyncStatus(type, txt){
-  const el=document.getElementById('sync-status');
-  const dot=el.querySelector('.sync-dot');
-  el.className='sync-pill '+type;
-  dot.className='sync-dot'+(type==='loading'?' pulse':'');
-  document.getElementById('sync-txt').textContent=txt;
-}
 
 // ══ HELPERS ══
 const brl = v => 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2});
@@ -922,7 +854,6 @@ document.getElementById('chip-data').textContent=hoje.toLocaleDateString('pt-BR'
 
 function renderAll(){ renderDash(); renderFin(); renderAgenda(); renderQuadro(); renderLista(); renderClientes(); renderTarefas(); renderCalendario(); }
 renderAll();
-syncSheets();
 </script>
 </body>
 </html>
