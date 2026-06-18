@@ -1,428 +1,493 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grupo Ethos</title>
-  <style>
-    :root {
-      --bg:       #080f1a;
-      --bg2:      #0d1726;
-      --surface:  #111e30;
-      --surface2: #16263d;
-      --border:   rgba(56,130,220,0.18);
-      --border2:  rgba(56,130,220,0.32);
-      --blue:     #3882dc;
-      --blue-dim: #1e4f8a;
-      --blue-lit: #6aaaf5;
-      --text:     #e8f0fb;
-      --muted:    #5b7faa;
-      --muted2:   #3a5a82;
-      --radius:   16px;
-      --radius-sm:10px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; min-height: 100vh; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Grupo Ethos</title>
+<style>
+:root{
+  --bg:#04080f;
+  --bg2:#060d18;
+  --surface:rgba(10,20,40,0.85);
+  --surface2:rgba(14,28,55,0.7);
+  --blue:#2979ff;
+  --blue-lit:#60a5fa;
+  --blue-glow:#1a4fff;
+  --text:#e8f0fb;
+  --muted:#4a6fa5;
+  --muted2:#2a4a75;
+  --border:rgba(41,121,255,0.15);
+  --border2:rgba(41,121,255,0.3);
+  --r:14px;
+  --rs:9px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden;}
 
-    .layout { display: flex; min-height: 100vh; }
+/* ── LIGHT RAYS ── */
+.rays{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.ray{position:absolute;border-radius:50%;filter:blur(60px);opacity:0;}
+.ray1{width:700px;height:120px;background:linear-gradient(90deg,transparent,#1a4fff88,#2979ffaa,transparent);top:15%;left:-200px;transform:rotate(-18deg);animation:sweep1 8s ease-in-out infinite;}
+.ray2{width:900px;height:80px;background:linear-gradient(90deg,transparent,#0d2fff55,#2979ff77,transparent);top:35%;left:-100px;transform:rotate(-10deg);animation:sweep1 11s ease-in-out infinite 2s;}
+.ray3{width:500px;height:60px;background:linear-gradient(90deg,transparent,#2979ff44,transparent);top:60%;left:-100px;transform:rotate(-5deg);animation:sweep1 14s ease-in-out infinite 5s;}
+.ray4{width:600px;height:100px;background:linear-gradient(90deg,transparent,#1a4fff66,#60a5fa55,transparent);top:75%;left:-150px;transform:rotate(8deg);animation:sweep1 9s ease-in-out infinite 1s;}
+.glow-orb{position:absolute;border-radius:50%;filter:blur(120px);}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,#1a3fff18,transparent 70%);top:-100px;right:-100px;animation:pulse 6s ease-in-out infinite;}
+.orb2{width:300px;height:300px;background:radial-gradient(circle,#2979ff14,transparent 70%);bottom:10%;left:20%;animation:pulse 8s ease-in-out infinite 3s;}
 
-    /* SIDEBAR */
-    .sidebar {
-      width: 220px; flex-shrink: 0;
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      padding: 28px 16px;
-      display: flex; flex-direction: column; gap: 4px;
-      position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
-    }
-    .logo { padding: 0 10px 24px; }
-    .logo-name { font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.1em; }
-    .logo-sub  { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.12em; margin-top: 3px; }
+@keyframes sweep1{0%{opacity:0;transform:translateX(-100px) rotate(-18deg);}20%{opacity:1;}80%{opacity:1;}100%{opacity:0;transform:translateX(120vw) rotate(-18deg);}}
+@keyframes pulse{0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:1;transform:scale(1.1);}}
 
-    .nav-btn {
-      display: flex; align-items: center; gap: 11px;
-      padding: 10px 12px; border-radius: var(--radius-sm);
-      cursor: pointer; color: var(--muted);
-      font-size: 0.85rem; font-weight: 500;
-      border: none; background: none; width: 100%; text-align: left;
-      transition: all 0.18s;
-    }
-    .nav-btn:hover { color: var(--text); background: rgba(56,130,220,0.1); }
-    .nav-btn.active { color: var(--blue-lit); background: rgba(56,130,220,0.15); }
-    .nav-btn .ic { font-size: 1rem; width: 18px; text-align: center; }
+/* ── LAYOUT ── */
+.layout{display:flex;min-height:100vh;position:relative;z-index:1;}
 
-    /* MAIN */
-    .content { margin-left: 220px; padding: 32px 36px; flex: 1; }
-    .section { display: none; }
-    .section.active { display: block; }
+/* ── SIDEBAR ── */
+.sidebar{
+  width:230px;flex-shrink:0;
+  background:rgba(4,8,15,0.92);
+  border-right:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  padding:28px 14px;
+  display:flex;flex-direction:column;gap:3px;
+  position:fixed;top:0;left:0;bottom:0;z-index:10;
+}
+.logo{padding:0 10px 28px;}
+.logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:0.12em;}
+.logo-sub{font-size:0.62rem;color:var(--muted);letter-spacing:0.14em;margin-top:3px;}
+.logo-dot{display:inline-block;width:6px;height:6px;background:var(--blue);border-radius:50%;margin-right:6px;box-shadow:0 0 8px var(--blue);}
 
-    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-    .topbar h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
-    .date-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 13px; font-size: 0.74rem; color: var(--muted); }
+.nav-btn{
+  display:flex;align-items:center;gap:11px;
+  padding:10px 12px;border-radius:var(--rs);
+  cursor:pointer;color:var(--muted);
+  font-size:0.84rem;font-weight:500;
+  border:none;background:none;width:100%;text-align:left;
+  transition:all 0.18s;
+}
+.nav-btn:hover{color:var(--text);background:rgba(41,121,255,0.08);}
+.nav-btn.active{color:var(--blue-lit);background:rgba(41,121,255,0.14);border:1px solid var(--border);}
+.nav-btn .ic{font-size:0.95rem;width:18px;text-align:center;}
 
-    /* STATS */
-    .stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
-    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
-    .stat .lbl { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
-    .stat .val { font-size: 1.9rem; font-weight: 700; color: var(--blue-lit); line-height: 1; }
-    .stat .sub { font-size: 0.68rem; color: var(--muted); margin-top: 5px; }
+.sidebar-footer{margin-top:auto;padding:12px 10px 0;border-top:1px solid var(--border);font-size:0.68rem;color:var(--muted);}
+.sidebar-date{color:var(--blue-lit);font-weight:600;display:block;margin-bottom:3px;}
 
-    /* CARD */
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 18px; }
-    .card-head { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; justify-content: space-between; }
-    .card-head .add-btn { background: rgba(56,130,220,0.15); color: var(--blue-lit); border: 1px solid var(--border2); border-radius: 8px; padding: 4px 10px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
-    .card-head .add-btn:hover { background: rgba(56,130,220,0.28); }
+/* ── CONTENT ── */
+.content{margin-left:230px;padding:36px 40px;flex:1;max-width:1000px;}
+.section{display:none;}
+.section.active{display:block;}
 
-    /* TABLE */
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; padding: 10px 18px; font-size: 0.67rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); background: var(--bg2); }
-    td { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text); vertical-align: middle; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(56,130,220,0.06); }
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;}
+.topbar h1{font-size:1.5rem;font-weight:700;color:#fff;letter-spacing:-0.01em;}
+.topbar h1 span{color:var(--blue-lit);}
+.chip{background:rgba(41,121,255,0.12);border:1px solid var(--border2);border-radius:20px;padding:5px 14px;font-size:0.73rem;color:var(--blue-lit);}
 
-    /* EDITABLE */
-    [contenteditable] { outline: none; border-radius: 6px; padding: 2px 6px; margin: -2px -6px; transition: background 0.15s; cursor: text; }
-    [contenteditable]:hover { background: rgba(56,130,220,0.12); }
-    [contenteditable]:focus { background: rgba(56,130,220,0.2); box-shadow: 0 0 0 1.5px var(--blue-dim); }
+/* ── TABS ── */
+.tabs{display:flex;gap:6px;margin-bottom:24px;}
+.tab{padding:7px 16px;border-radius:20px;font-size:0.8rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:none;color:var(--muted);transition:all 0.15s;}
+.tab:hover{color:var(--text);border-color:var(--border2);}
+.tab.active{background:rgba(41,121,255,0.15);border-color:var(--border2);color:var(--blue-lit);}
 
-    /* BADGES */
-    .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
-    .b-alta     { background: rgba(220,60,60,0.18); color: #f07070; }
-    .b-media    { background: rgba(220,170,40,0.18); color: #d4aa50; }
-    .b-baixa    { background: rgba(56,130,220,0.18); color: var(--blue-lit); }
-    .b-ativo    { background: rgba(40,180,100,0.18); color: #5dcc8a; }
-    .b-pendente { background: rgba(90,100,120,0.25); color: var(--muted); }
-    .b-revisao  { background: rgba(220,170,40,0.18); color: #d4aa50; }
-    .b-entregue { background: rgba(40,180,100,0.18); color: #5dcc8a; }
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;backdrop-filter:blur(10px);}
+.stat .lbl{font-size:0.66rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.stat .val{font-size:1.9rem;font-weight:700;color:var(--blue-lit);line-height:1;}
+.stat .sub{font-size:0.67rem;color:var(--muted);margin-top:5px;}
 
-    /* SELECT BADGE */
-    .badge-sel { background: none; border: none; cursor: pointer; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; appearance: none; -webkit-appearance: none; }
+/* ── VIDEO CARDS (QUADRO) ── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.vcard{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:18px 20px;
+  backdrop-filter:blur(10px);
+  transition:border-color 0.2s,transform 0.2s;
+  display:flex;flex-direction:column;gap:12px;
+}
+.vcard:hover{border-color:var(--border2);transform:translateY(-1px);}
+.vcard.done{opacity:0.5;border-color:rgba(40,180,100,0.3);}
+.vcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.vcard-title{font-size:0.9rem;font-weight:600;color:var(--text);line-height:1.3;}
+.vcard-client{font-size:0.72rem;color:var(--muted);margin-top:3px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.sd-pendente{background:#4a6fa5;}
+.sd-edicao  {background:#f59e0b;box-shadow:0 0 6px #f59e0b66;}
+.sd-revisao {background:#8b5cf6;box-shadow:0 0 6px #8b5cf666;}
+.sd-entregue{background:#22c55e;box-shadow:0 0 6px #22c55e66;}
 
-    /* PROGRESS */
-    .prog-wrap { display: flex; align-items: center; gap: 8px; }
-    .prog { width: 80px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-    .prog .fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width 0.4s; }
-    .prog-pct { font-size: 0.7rem; color: var(--muted); min-width: 28px; }
+.vcard-actions{display:flex;flex-direction:column;gap:8px;}
+.btn-download{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 12px;border-radius:var(--rs);
+  background:rgba(41,121,255,0.12);border:1px solid var(--border2);
+  color:var(--blue-lit);font-size:0.78rem;font-weight:500;
+  cursor:pointer;text-decoration:none;transition:background 0.15s;
+}
+.btn-download:hover{background:rgba(41,121,255,0.22);}
+.btn-download .ic{font-size:0.9rem;}
 
-    /* AVATAR */
-    .av { width: 30px; height: 30px; border-radius: 50%; background: var(--blue-dim); color: var(--blue-lit); font-size: 0.65rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.link-field{position:relative;}
+.link-field input{
+  width:100%;padding:8px 12px;
+  background:rgba(6,13,24,0.8);border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--text);font-size:0.78rem;
+  font-family:inherit;outline:none;transition:border-color 0.15s;
+}
+.link-field input::placeholder{color:var(--muted);}
+.link-field input:focus{border-color:var(--border2);}
 
-    /* TASKS */
-    .task { display: flex; align-items: flex-start; gap: 12px; padding: 13px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.15s; }
-    .task:last-child { border-bottom: none; }
-    .task:hover { background: rgba(56,130,220,0.06); }
-    .task-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--muted2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all 0.2s; }
-    .task.done .task-circle { background: var(--blue); border-color: var(--blue); }
-    .task.done .task-circle::after { content: '✓'; font-size: 9px; color: #fff; font-weight: 900; }
-    .task.done .task-name { text-decoration: line-through; color: var(--muted); }
-    .task-name { font-size: 0.85rem; }
-    .task-meta { font-size: 0.71rem; color: var(--muted); margin-top: 2px; }
+.btn-done{
+  padding:9px 12px;border-radius:var(--rs);
+  border:1px solid rgba(34,197,94,0.3);
+  background:rgba(34,197,94,0.08);
+  color:#4ade80;font-size:0.78rem;font-weight:600;
+  cursor:pointer;transition:all 0.15s;width:100%;
+}
+.btn-done:hover{background:rgba(34,197,94,0.18);}
+.vcard.done .btn-done{background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.5);}
 
-    /* CALENDAR */
-    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; padding: 18px; }
-    .cal-dname { text-align: center; font-size: 0.65rem; font-weight: 600; color: var(--muted); padding: 4px 0 8px; text-transform: uppercase; }
-    .cal-day { aspect-ratio: 1; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--muted); position: relative; }
-    .cal-day.empty { opacity: 0; }
-    .cal-day.cur { color: var(--text); }
-    .cal-day.today { background: var(--blue); color: #fff; font-weight: 700; }
-    .cal-day.has-event:not(.today) { background: var(--surface2); color: var(--blue-lit); font-weight: 600; border: 1px solid var(--border2); }
-    .cal-day .dot { width: 4px; height: 4px; background: var(--blue-lit); border-radius: 50%; position: absolute; bottom: 3px; }
-    .cal-day.today .dot { background: rgba(255,255,255,0.6); }
+.vcard-status{
+  font-size:0.72rem;font-weight:600;
+  padding:3px 10px;border-radius:20px;display:inline-block;
+}
+.vs-pendente{background:rgba(74,111,165,0.2);color:#7aa2d4;}
+.vs-edicao  {background:rgba(245,158,11,0.15);color:#fbbf24;}
+.vs-revisao {background:rgba(139,92,246,0.15);color:#a78bfa;}
+.vs-entregue{background:rgba(34,197,94,0.15);color:#4ade80;}
 
-    /* ADD ROW */
-    .add-row { padding: 10px 18px; border-top: 1px solid var(--border); }
-    .add-row input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 7px 12px; font-size: 0.82rem; width: 100%; outline: none; font-family: inherit; }
-    .add-row input:focus { border-color: var(--blue-dim); }
-    .add-row input::placeholder { color: var(--muted); }
+/* ── TABLE ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:18px;backdrop-filter:blur(10px);}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border);font-size:0.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;display:flex;align-items:center;justify-content:space-between;}
+.add-btn{background:rgba(41,121,255,0.12);color:var(--blue-lit);border:1px solid var(--border2);border-radius:7px;padding:4px 10px;font-size:0.7rem;cursor:pointer;font-weight:600;}
+.add-btn:hover{background:rgba(41,121,255,0.25);}
 
-    @media (max-width: 700px) {
-      .sidebar { width: 56px; padding: 16px 8px; }
-      .nav-btn span, .logo-name, .logo-sub { display: none; }
-      .content { margin-left: 56px; padding: 16px; }
-      .stats { grid-template-columns: repeat(2,1fr); }
-    }
-  </style>
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:10px 18px;font-size:0.66rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);background:rgba(4,8,15,0.5);}
+td{padding:12px 18px;border-bottom:1px solid var(--border);font-size:0.84rem;color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(41,121,255,0.05);}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:0.69rem;font-weight:600;}
+.b-alta {background:rgba(220,60,60,0.18);color:#f07070;}
+.b-media{background:rgba(245,158,11,0.15);color:#fbbf24;}
+.b-baixa{background:rgba(41,121,255,0.18);color:var(--blue-lit);}
+.b-ativo{background:rgba(34,197,94,0.15);color:#4ade80;}
+
+/* ── CLIENTES VIEW ── */
+.cliente-group{margin-bottom:22px;}
+.cliente-group-head{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 18px;
+  background:rgba(41,121,255,0.08);
+  border:1px solid var(--border);
+  border-radius:var(--r) var(--r) 0 0;
+  font-size:0.85rem;font-weight:600;color:var(--text);
+}
+.av{width:28px;height:28px;border-radius:50%;background:var(--blue-glow);color:#fff;font-size:0.62rem;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cliente-group-body{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);overflow:hidden;}
+
+/* ── CALENDAR ── */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:18px;}
+.cal-dn{text-align:center;font-size:0.63rem;font-weight:600;color:var(--muted);padding:4px 0 8px;text-transform:uppercase;}
+.cal-day{aspect-ratio:1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.78rem;color:var(--muted);position:relative;}
+.cal-day.cur{color:var(--text);}
+.cal-day.today{background:var(--blue);color:#fff;font-weight:700;box-shadow:0 0 12px var(--blue-glow);}
+.cal-day.has-ev:not(.today){background:rgba(41,121,255,0.12);color:var(--blue-lit);font-weight:600;border:1px solid var(--border2);}
+.cal-day.empty{opacity:0;}
+.dot{width:4px;height:4px;background:var(--blue-lit);border-radius:50%;position:absolute;bottom:3px;}
+.today .dot{background:rgba(255,255,255,0.7);}
+
+/* ── TAREFAS ── */
+.task{display:flex;align-items:flex-start;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+.task:last-child{border-bottom:none;}
+.task:hover{background:rgba(41,121,255,0.05);}
+.tc{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.2s;}
+.task.done .tc{background:var(--blue);border-color:var(--blue);box-shadow:0 0 8px var(--blue-glow);}
+.task.done .tc::after{content:'✓';font-size:9px;color:#fff;font-weight:900;}
+.task.done .tn{text-decoration:line-through;color:var(--muted);}
+.tn{font-size:0.85rem;}
+.tm{font-size:0.7rem;color:var(--muted);margin-top:2px;}
+.add-row{padding:10px 18px;border-top:1px solid var(--border);}
+.add-row input{width:100%;padding:8px 12px;background:rgba(6,13,24,0.8);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:0.81rem;font-family:inherit;outline:none;}
+.add-row input::placeholder{color:var(--muted);}
+.add-row input:focus{border-color:var(--border2);}
+
+/* ── EDITABLE ── */
+[contenteditable]{outline:none;border-radius:5px;padding:1px 5px;margin:-1px -5px;transition:background 0.15s;cursor:text;}
+[contenteditable]:hover{background:rgba(41,121,255,0.1);}
+[contenteditable]:focus{background:rgba(41,121,255,0.18);box-shadow:0 0 0 1.5px var(--muted2);}
+
+select.badge-sel{background:none;border:none;cursor:pointer;appearance:none;-webkit-appearance:none;font-family:inherit;font-size:0.69rem;font-weight:600;padding:3px 9px;border-radius:20px;}
+
+@media(max-width:700px){
+  .sidebar{width:58px;padding:16px 8px;}
+  .nav-btn span,.logo-name,.logo-sub,.sidebar-footer{display:none;}
+  .content{margin-left:58px;padding:18px 14px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .cards-grid{grid-template-columns:1fr;}
+}
+</style>
 </head>
 <body>
+
+<div class="rays">
+  <div class="ray ray1"></div>
+  <div class="ray ray2"></div>
+  <div class="ray ray3"></div>
+  <div class="ray ray4"></div>
+  <div class="glow-orb orb1"></div>
+  <div class="glow-orb orb2"></div>
+</div>
+
 <div class="layout">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-name"><span class="logo-dot"></span>GRUPO ETHOS</div>
+    <div class="logo-sub">PRODUÇÃO DE VÍDEO</div>
+  </div>
+  <button class="nav-btn active" onclick="go('fila',this)"><span class="ic">▦</span><span>Fila de Edição</span></button>
+  <button class="nav-btn" onclick="go('clientes',this)"><span class="ic">◎</span><span>Clientes</span></button>
+  <button class="nav-btn" onclick="go('calendario',this)"><span class="ic">◈</span><span>Calendário</span></button>
+  <button class="nav-btn" onclick="go('tarefas',this)"><span class="ic">◻</span><span>Tarefas</span></button>
+  <div class="sidebar-footer">
+    <span class="sidebar-date" id="sb-date"></span>
+    <span id="sb-pend"></span> pendentes
+  </div>
+</aside>
 
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-name">GRUPO ETHOS</div>
-      <div class="logo-sub">PRODUÇÃO DE VÍDEO</div>
+<main class="content">
+
+  <!-- FILA DE EDIÇÃO -->
+  <div class="section active" id="fila">
+    <div class="topbar">
+      <h1>Fila de <span>Edição</span></h1>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="add-btn" onclick="addVideo()" style="padding:7px 14px;border-radius:20px;font-size:0.78rem">+ Novo vídeo</button>
+      </div>
     </div>
-    <button class="nav-btn active" onclick="go('resumo',this)"><span class="ic">◈</span><span>Resumo</span></button>
-    <button class="nav-btn" onclick="go('clientes',this)"><span class="ic">◎</span><span>Clientes</span></button>
-    <button class="nav-btn" onclick="go('pipeline',this)"><span class="ic">▷</span><span>Pipeline</span></button>
-    <button class="nav-btn" onclick="go('calendario',this)"><span class="ic">▦</span><span>Calendário</span></button>
-    <button class="nav-btn" onclick="go('tarefas',this)"><span class="ic">◻</span><span>Tarefas</span></button>
-  </aside>
-
-  <main class="content">
-
-    <!-- RESUMO -->
-    <div class="section active" id="resumo">
-      <div class="topbar">
-        <h1>Visão Geral</h1>
-        <span class="date-chip" id="data-hoje"></span>
-      </div>
-      <div class="stats">
-        <div class="stat"><div class="lbl">Clientes ativos</div><div class="val">10</div><div class="sub">em produção</div></div>
-        <div class="stat"><div class="lbl">Vídeos contratados</div><div class="val">139</div><div class="sub">+ Kaiser ilimitado</div></div>
-        <div class="stat"><div class="lbl">Alta prioridade</div><div class="val">4</div><div class="sub">clientes</div></div>
-        <div class="stat"><div class="lbl">Tarefas pendentes</div><div class="val" id="count-pend">10</div><div class="sub">esta semana</div></div>
-      </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchView('quadro',this)">Quadro</button>
+      <button class="tab" onclick="switchView('lista',this)">Lista</button>
+    </div>
+    <div id="view-quadro" class="cards-grid"></div>
+    <div id="view-lista" style="display:none">
       <div class="card">
-        <div class="card-head">Clientes por prioridade</div>
+        <div class="card-head"><span>Todos os vídeos</span></div>
         <table>
-          <thead><tr><th>Cliente</th><th>Serviço</th><th>Prioridade</th><th>Progresso</th></tr></thead>
-          <tbody id="resumo-tbody"></tbody>
+          <thead><tr><th>Vídeo</th><th>Cliente</th><th>Responsável</th><th>Link editado</th><th>Status</th></tr></thead>
+          <tbody id="lista-tbody"></tbody>
         </table>
       </div>
     </div>
+  </div>
 
-    <!-- CLIENTES -->
-    <div class="section" id="clientes">
-      <div class="topbar"><h1>Clientes</h1></div>
-      <div class="card">
-        <div class="card-head">
-          <span>10 clientes ativos</span>
-          <button class="add-btn" onclick="addCliente()">+ Adicionar</button>
-        </div>
-        <table>
-          <thead><tr><th></th><th>Cliente</th><th>Serviço</th><th>Total</th><th>Entregues</th><th>Restantes</th><th>Prioridade</th><th>Status</th></tr></thead>
-          <tbody id="clientes-tbody"></tbody>
-        </table>
-      </div>
+  <!-- CLIENTES -->
+  <div class="section" id="clientes">
+    <div class="topbar"><h1>Por <span>Cliente</span></h1></div>
+    <div id="clientes-view"></div>
+  </div>
+
+  <!-- CALENDÁRIO -->
+  <div class="section" id="calendario">
+    <div class="topbar"><h1><span>Calendário</span></h1></div>
+    <div class="card">
+      <div class="card-head" id="mes-lbl"></div>
+      <div class="cal-grid" id="cal-grid"></div>
     </div>
-
-    <!-- PIPELINE -->
-    <div class="section" id="pipeline">
-      <div class="topbar"><h1>Pipeline de Vídeos</h1></div>
-      <div class="card">
-        <div class="card-head">
-          <span>Vídeos em produção</span>
-          <button class="add-btn" onclick="addVideo()">+ Adicionar</button>
-        </div>
-        <table>
-          <thead><tr><th>Vídeo / Projeto</th><th>Cliente</th><th>Responsável</th><th>Status</th></tr></thead>
-          <tbody id="pipeline-tbody"></tbody>
-        </table>
-      </div>
+    <div class="card">
+      <div class="card-head">Próximas entregas</div>
+      <div id="entregas-list"></div>
     </div>
+  </div>
 
-    <!-- CALENDÁRIO -->
-    <div class="section" id="calendario">
-      <div class="topbar"><h1>Calendário</h1></div>
-      <div class="card">
-        <div class="card-head" id="mes-label"></div>
-        <div class="cal-grid" id="cal-grid"></div>
-      </div>
-      <div class="card">
-        <div class="card-head">Próximas entregas</div>
-        <div class="task"><div class="task-circle"></div><div><div class="task-name">Reels semana 1</div><div class="task-meta">Doutor Fabiano · 20/06</div></div></div>
-        <div class="task"><div class="task-circle"></div><div><div class="task-name">TikTok lote 01</div><div class="task-meta">Amendoeira · 25/06</div></div></div>
-        <div class="task"><div class="task-circle"></div><div><div class="task-name">Conteúdo mensal junho</div><div class="task-meta">Ótica Kaiser · 30/06</div></div></div>
-      </div>
+  <!-- TAREFAS -->
+  <div class="section" id="tarefas">
+    <div class="topbar"><h1>Tarefas da <span>Equipe</span></h1></div>
+    <div class="card">
+      <div class="card-head"><span id="tarefas-lbl"></span><button class="add-btn" onclick="document.getElementById('nova-t').focus()">+ Adicionar</button></div>
+      <div id="tarefas-list"></div>
+      <div class="add-row"><input id="nova-t" placeholder="Nova tarefa... (Enter para salvar)" onkeydown="if(event.key==='Enter')saveTarefa()"/></div>
     </div>
+  </div>
 
-    <!-- TAREFAS -->
-    <div class="section" id="tarefas">
-      <div class="topbar"><h1>Tarefas da Equipe</h1></div>
-      <div class="card">
-        <div class="card-head">
-          <span id="tarefas-lbl">10 pendentes</span>
-          <button class="add-btn" onclick="addTarefa()">+ Adicionar</button>
-        </div>
-        <div id="tarefas-list"></div>
-        <div class="add-row">
-          <input id="nova-tarefa" placeholder="Nova tarefa... (Enter para salvar)" onkeydown="if(event.key==='Enter')saveTarefa()" />
-        </div>
-      </div>
-    </div>
-
-  </main>
+</main>
 </div>
 
 <script>
-// ── DATA ──────────────────────────────────────────────────────────
-const clientes = [
-  { av:'VW', nome:'Vinícius (Workana)', servico:'Pacote Shorts',        total:50,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
-  { av:'DF', nome:'Doutor Fabiano',     servico:'Conteúdo Saúde',       total:20,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
-  { av:'AM', nome:'Amendoeira',         servico:'TikTok + YouTube',     total:20,  entregues:0,  prioridade:'Alta',  status:'Ativo' },
-  { av:'OK', nome:'Ótica Kaiser',       servico:'Conteúdo Mensal',      total:null,entregues:null,prioridade:'Alta', status:'Ativo' },
-  { av:'CS', nome:'Conecta Soluções',   servico:'Edições Comerciais',   total:12,  entregues:0,  prioridade:'Média', status:'Ativo' },
-  { av:'G3', nome:'G3',                 servico:'Institucional + Reels',total:3,   entregues:0,  prioridade:'Média', status:'Ativo' },
-  { av:'ED', nome:'Eduarda',            servico:'Conteúdo Estético',    total:20,  entregues:0,  prioridade:'Média', status:'Ativo' },
-  { av:'CA', nome:'Candy',              servico:'Conteúdo Marca',       total:6,   entregues:0,  prioridade:'Média', status:'Ativo' },
-  { av:'LN', nome:'Luanne Nutri',       servico:'Conteúdo Nutrição',    total:4,   entregues:0,  prioridade:'Média', status:'Ativo' },
-  { av:'AD', nome:'Adriano',            servico:'Vídeos Comerciais',    total:4,   entregues:0,  prioridade:'Baixa', status:'Ativo' },
-];
-
+// ── DATA ──
 const videos = [
-  { nome:'Conteúdo mensal junho',   cliente:'Ótica Kaiser',       resp:'—', status:'Em revisão' },
-  { nome:'Reel semana 1',           cliente:'Doutor Fabiano',     resp:'—', status:'Pendente' },
-  { nome:'TikTok lote 01',          cliente:'Amendoeira',         resp:'—', status:'Pendente' },
-  { nome:'Short pack #1',           cliente:'Vinícius (Workana)', resp:'—', status:'Pendente' },
-  { nome:'Vídeo institucional 01',  cliente:'G3',                 resp:'—', status:'Pendente' },
-  { nome:'Edição comercial 01',     cliente:'Conecta Soluções',   resp:'—', status:'Pendente' },
-  { nome:'Vídeo estético 01',       cliente:'Eduarda',            resp:'—', status:'Pendente' },
-  { nome:'Vídeo marca 01',          cliente:'Candy',              resp:'—', status:'Pendente' },
-  { nome:'Conteúdo nutrição 01',    cliente:'Luanne Nutri',       resp:'—', status:'Pendente' },
-  { nome:'Vídeo comercial 01',      cliente:'Adriano',            resp:'—', status:'Pendente' },
+  { id:1, nome:'Conteúdo mensal junho',   cliente:'Ótica Kaiser',        resp:'—', link:'', status:'Em revisão' },
+  { id:2, nome:'Reel semana 1',           cliente:'Doutor Fabiano',      resp:'—', link:'', status:'Pendente'   },
+  { id:3, nome:'TikTok lote 01',          cliente:'Amendoeira',          resp:'—', link:'', status:'Pendente'   },
+  { id:4, nome:'Short pack #1',           cliente:'Vinícius (Workana)',  resp:'—', link:'', status:'Em edição'  },
+  { id:5, nome:'Vídeo institucional 01',  cliente:'G3',                  resp:'—', link:'', status:'Pendente'   },
+  { id:6, nome:'Edição comercial 01',     cliente:'Conecta Soluções',    resp:'—', link:'', status:'Pendente'   },
+  { id:7, nome:'Vídeo estético 01',       cliente:'Eduarda',             resp:'—', link:'', status:'Pendente'   },
+  { id:8, nome:'Vídeo marca 01',          cliente:'Candy',               resp:'—', link:'', status:'Pendente'   },
+  { id:9, nome:'Conteúdo nutrição 01',    cliente:'Luanne Nutri',        resp:'—', link:'', status:'Pendente'   },
+  { id:10,nome:'Vídeo comercial 01',      cliente:'Adriano',             resp:'—', link:'', status:'Pendente'   },
 ];
 
 const tarefas = [
-  { txt:'Editar reels Doutor Fabiano semana 1', meta:'Doutor Fabiano · Alta',      done:false },
-  { txt:'Montar lote TikTok Amendoeira',        meta:'Amendoeira · Alta',          done:false },
-  { txt:'Revisar conteúdo mensal Ótica Kaiser', meta:'Ótica Kaiser · Alta',        done:false },
-  { txt:'Iniciar pack Shorts Vinícius',         meta:'Vinícius (Workana) · Alta',  done:false },
-  { txt:'Editar vídeo institucional G3',        meta:'G3 · Média',                 done:false },
-  { txt:'Produzir conteúdo estético Eduarda',   meta:'Eduarda · Média',            done:false },
-  { txt:'Edições comerciais Conecta Soluções',  meta:'Conecta Soluções · Média',   done:false },
-  { txt:'Vídeo de marca Candy',                 meta:'Candy · Média',              done:false },
-  { txt:'Conteúdo nutrição Luanne Nutri',       meta:'Luanne Nutri · Média',       done:false },
-  { txt:'Vídeo comercial Adriano',              meta:'Adriano · Baixa',            done:false },
+  {txt:'Editar reels Doutor Fabiano semana 1',meta:'Doutor Fabiano · Alta',done:false},
+  {txt:'Montar lote TikTok Amendoeira',meta:'Amendoeira · Alta',done:false},
+  {txt:'Revisar conteúdo mensal Ótica Kaiser',meta:'Ótica Kaiser · Alta',done:false},
+  {txt:'Iniciar pack Shorts Vinícius',meta:'Vinícius (Workana) · Alta',done:false},
+  {txt:'Editar vídeo institucional G3',meta:'G3 · Média',done:false},
+  {txt:'Produzir conteúdo estético Eduarda',meta:'Eduarda · Média',done:false},
+  {txt:'Edições comerciais Conecta Soluções',meta:'Conecta Soluções · Média',done:false},
+  {txt:'Vídeo de marca Candy',meta:'Candy · Média',done:false},
+  {txt:'Conteúdo nutrição Luanne Nutri',meta:'Luanne Nutri · Média',done:false},
+  {txt:'Vídeo comercial Adriano',meta:'Adriano · Baixa',done:false},
 ];
 
-// ── BADGES ────────────────────────────────────────────────────────
-const priorClasses = { 'Alta':'b-alta','Média':'b-media','Baixa':'b-baixa' };
-const statusClasses = { 'Ativo':'b-ativo','Inativo':'b-pendente' };
-const videoStatus = ['Pendente','Em edição','Em revisão','Entregue'];
-const videoClasses = { 'Pendente':'b-pendente','Em edição':'b-media','Em revisão':'b-revisao','Entregue':'b-entregue' };
+const statusList = ['Pendente','Em edição','Em revisão','Entregue'];
+const sdClass = {Pendente:'sd-pendente','Em edição':'sd-edicao','Em revisão':'sd-revisao',Entregue:'sd-entregue'};
+const vsClass = {Pendente:'vs-pendente','Em edição':'vs-edicao','Em revisão':'vs-revisao',Entregue:'vs-entregue'};
 
-function pct(c) {
-  if (!c.total) return 100;
-  return Math.round((c.entregues / c.total) * 100);
-}
-
-// ── RENDER RESUMO ─────────────────────────────────────────────────
-function renderResumo() {
-  const tb = document.getElementById('resumo-tbody');
-  tb.innerHTML = clientes.map(c => `
-    <tr>
-      <td><b>${c.nome}</b></td>
-      <td>${c.servico}</td>
-      <td><span class="badge ${priorClasses[c.prioridade]}">${c.prioridade}</span></td>
-      <td>
-        <div class="prog-wrap">
-          <div class="prog"><div class="fill" style="width:${pct(c)}%"></div></div>
-          <span class="prog-pct">${c.total ? pct(c)+'%' : '∞'}</span>
+// ── QUADRO ──
+function renderQuadro(){
+  document.getElementById('view-quadro').innerHTML = videos.map(v=>`
+    <div class="vcard ${v.status==='Entregue'?'done':''}" id="vc-${v.id}">
+      <div class="vcard-top">
+        <div>
+          <div class="vcard-title">${v.nome}</div>
+          <div class="vcard-client">${v.cliente}</div>
         </div>
-      </td>
-    </tr>`).join('');
-}
-
-// ── RENDER CLIENTES ───────────────────────────────────────────────
-function renderClientes() {
-  const tb = document.getElementById('clientes-tbody');
-  tb.innerHTML = clientes.map((c,i) => `
-    <tr>
-      <td><div class="av">${c.av}</div></td>
-      <td><b contenteditable onblur="clientes[${i}].nome=this.textContent;renderResumo()">${c.nome}</b></td>
-      <td><span contenteditable onblur="clientes[${i}].servico=this.textContent;renderResumo()">${c.servico}</span></td>
-      <td><span contenteditable onblur="clientes[${i}].total=+this.textContent||null;renderResumo()">${c.total??'∞'}</span></td>
-      <td><span contenteditable onblur="clientes[${i}].entregues=+this.textContent||0;renderResumo()">${c.entregues??'—'}</span></td>
-      <td>${c.total ? c.total - c.entregues : '—'}</td>
-      <td>
-        <select class="badge badge-sel ${priorClasses[c.prioridade]}" onchange="clientes[${i}].prioridade=this.value;renderClientes();renderResumo()">
-          ${['Alta','Média','Baixa'].map(p=>`<option ${p===c.prioridade?'selected':''}>${p}</option>`).join('')}
-        </select>
-      </td>
-      <td>
-        <select class="badge badge-sel ${statusClasses[c.status]}" onchange="clientes[${i}].status=this.value;renderClientes()">
-          ${['Ativo','Inativo'].map(s=>`<option ${s===c.status?'selected':''}>${s}</option>`).join('')}
-        </select>
-      </td>
-    </tr>`).join('');
-}
-
-function addCliente() {
-  clientes.push({ av:'NV', nome:'Novo cliente', servico:'Serviço', total:0, entregues:0, prioridade:'Média', status:'Ativo' });
-  renderClientes(); renderResumo();
-}
-
-// ── RENDER PIPELINE ───────────────────────────────────────────────
-function renderPipeline() {
-  const tb = document.getElementById('pipeline-tbody');
-  tb.innerHTML = videos.map((v,i) => `
-    <tr>
-      <td><span contenteditable onblur="videos[${i}].nome=this.textContent">${v.nome}</span></td>
-      <td><span contenteditable onblur="videos[${i}].cliente=this.textContent">${v.cliente}</span></td>
-      <td><span contenteditable onblur="videos[${i}].resp=this.textContent">${v.resp}</span></td>
-      <td>
-        <select class="badge badge-sel ${videoClasses[v.status]}" onchange="videos[${i}].status=this.value;renderPipeline()">
-          ${videoStatus.map(s=>`<option ${s===v.status?'selected':''}>${s}</option>`).join('')}
-        </select>
-      </td>
-    </tr>`).join('');
-}
-
-function addVideo() {
-  videos.push({ nome:'Novo vídeo', cliente:'—', resp:'—', status:'Pendente' });
-  renderPipeline();
-}
-
-// ── TAREFAS ───────────────────────────────────────────────────────
-function renderTarefas() {
-  const list = document.getElementById('tarefas-list');
-  list.innerHTML = tarefas.map((t,i) => `
-    <div class="task ${t.done?'done':''}" onclick="toggleTarefa(${i})">
-      <div class="task-circle"></div>
-      <div>
-        <div class="task-name" contenteditable onclick="event.stopPropagation()" onblur="tarefas[${i}].txt=this.textContent">${t.txt}</div>
-        <div class="task-meta">${t.meta}</div>
+        <div class="status-dot ${sdClass[v.status]}"></div>
+      </div>
+      <span class="vcard-status ${vsClass[v.status]}">${v.status}</span>
+      <div class="vcard-actions">
+        <a class="btn-download" href="#" onclick="return false"><span class="ic">↓</span> Baixar material bruto</a>
+        <div class="link-field">
+          <input type="text" placeholder="Cole o link do vídeo editado..." value="${v.link}"
+            onchange="videos[${v.id-1}].link=this.value"
+            onblur="videos[${v.id-1}].link=this.value"/>
+        </div>
+        <button class="btn-done" onclick="marcarPronto(${v.id-1})">
+          ${v.status==='Entregue'?'✓ Entregue':'Marcar como pronto'}
+        </button>
       </div>
     </div>`).join('');
-  const pend = tarefas.filter(t=>!t.done).length;
-  document.getElementById('count-pend').textContent = pend;
-  document.getElementById('tarefas-lbl').textContent = pend + ' pendentes';
 }
 
-function toggleTarefa(i) { tarefas[i].done = !tarefas[i].done; renderTarefas(); }
-
-function addTarefa() { document.getElementById('nova-tarefa').focus(); }
-function saveTarefa() {
-  const inp = document.getElementById('nova-tarefa');
-  const txt = inp.value.trim();
-  if (!txt) return;
-  tarefas.push({ txt, meta:'Geral', done:false });
-  inp.value = '';
-  renderTarefas();
+function marcarPronto(i){
+  videos[i].status = videos[i].status==='Entregue' ? 'Pendente' : 'Entregue';
+  renderQuadro(); renderLista(); renderClientes();
 }
 
-// ── NAVEGAÇÃO ─────────────────────────────────────────────────────
-function go(id, btn) {
+// ── LISTA ──
+function renderLista(){
+  document.getElementById('lista-tbody').innerHTML = videos.map((v,i)=>`
+    <tr>
+      <td><span contenteditable onblur="videos[${i}].nome=this.textContent;renderQuadro();renderClientes()">${v.nome}</span></td>
+      <td><span contenteditable onblur="videos[${i}].cliente=this.textContent;renderClientes()">${v.cliente}</span></td>
+      <td><span contenteditable onblur="videos[${i}].resp=this.textContent">${v.resp}</span></td>
+      <td><input type="text" placeholder="link..." value="${v.link}" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:0.82rem;padding:2px 4px;outline:none;width:140px" onblur="videos[${i}].link=this.value"/></td>
+      <td>
+        <select class="badge badge-sel ${vsClass[v.status]}" onchange="videos[${i}].status=this.value;this.className='badge badge-sel '+${JSON.stringify(vsClass)}[this.value];renderQuadro();renderClientes()">
+          ${statusList.map(s=>`<option ${s===v.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+// ── CLIENTES ──
+function renderClientes(){
+  const groups = {};
+  videos.forEach(v=>{ if(!groups[v.cliente]) groups[v.cliente]=[]; groups[v.cliente].push(v); });
+  document.getElementById('clientes-view').innerHTML = Object.entries(groups).map(([c,vids])=>`
+    <div class="cliente-group">
+      <div class="cliente-group-head">
+        <div class="av">${c.slice(0,2).toUpperCase()}</div>
+        <span>${c}</span>
+        <span style="margin-left:auto;font-size:0.72rem;color:var(--muted)">${vids.length} vídeo${vids.length>1?'s':''}</span>
+      </div>
+      <div class="cliente-group-body">
+        <table>
+          <thead><tr><th>Vídeo</th><th>Status</th><th>Link editado</th></tr></thead>
+          <tbody>${vids.map(v=>`
+            <tr>
+              <td>${v.nome}</td>
+              <td><span class="vcard-status ${vsClass[v.status]}">${v.status}</span></td>
+              <td style="font-size:0.75rem;color:var(--blue-lit)">${v.link||'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`).join('');
+}
+
+// ── ADD VIDEO ──
+let nextId = videos.length+1;
+function addVideo(){
+  videos.push({id:nextId++,nome:'Novo vídeo',cliente:'Cliente',resp:'—',link:'',status:'Pendente'});
+  renderQuadro(); renderLista(); renderClientes();
+}
+
+// ── VIEW SWITCH ──
+let curView = 'quadro';
+function switchView(v, btn){
+  document.getElementById('view-quadro').style.display = v==='quadro'?'grid':'none';
+  document.getElementById('view-lista').style.display  = v==='lista'?'block':'none';
+  document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  curView = v;
+}
+
+// ── NAV ──
+function go(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
 }
 
-// ── CALENDÁRIO ────────────────────────────────────────────────────
-const hoje = new Date();
-const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-const sem = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-document.getElementById('mes-label').textContent = meses[hoje.getMonth()] + ' ' + hoje.getFullYear();
-document.getElementById('data-hoje').textContent = hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
-const grid = document.getElementById('cal-grid');
-sem.forEach(d=>{ const e=document.createElement('div'); e.className='cal-dname'; e.textContent=d; grid.appendChild(e); });
-const ini = new Date(hoje.getFullYear(),hoje.getMonth(),1);
-const tot = new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();
-const evts = [20,25,30];
-for(let i=0;i<ini.getDay();i++){ const e=document.createElement('div'); e.className='cal-day empty'; grid.appendChild(e); }
-for(let d=1;d<=tot;d++){
-  const e=document.createElement('div'); e.className='cal-day cur';
-  if(d===hoje.getDate()) e.classList.add('today');
-  if(evts.includes(d)){ e.classList.add('has-event'); const dot=document.createElement('div'); dot.className='dot'; e.appendChild(dot); }
-  e.append(d); grid.appendChild(e);
+// ── TAREFAS ──
+function renderTarefas(){
+  document.getElementById('tarefas-list').innerHTML = tarefas.map((t,i)=>`
+    <div class="task ${t.done?'done':''}" onclick="toggleT(${i})">
+      <div class="tc"></div>
+      <div>
+        <div class="tn" contenteditable onclick="event.stopPropagation()" onblur="tarefas[${i}].txt=this.textContent">${t.txt}</div>
+        <div class="tm">${t.meta}</div>
+      </div>
+    </div>`).join('');
+  const p = tarefas.filter(t=>!t.done).length;
+  document.getElementById('tarefas-lbl').textContent = p+' pendentes';
+  document.getElementById('sb-pend').textContent = p;
 }
+function toggleT(i){ tarefas[i].done=!tarefas[i].done; renderTarefas(); }
+function saveTarefa(){ const inp=document.getElementById('nova-t'); const txt=inp.value.trim(); if(!txt)return; tarefas.push({txt,meta:'Geral',done:false}); inp.value=''; renderTarefas(); }
 
-// ── INIT ──────────────────────────────────────────────────────────
-renderResumo();
-renderClientes();
-renderPipeline();
-renderTarefas();
+// ── CALENDARIO ──
+const hoje = new Date();
+const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const sem=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+document.getElementById('mes-lbl').textContent = meses[hoje.getMonth()]+' '+hoje.getFullYear();
+document.getElementById('sb-date').textContent = hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+const grid=document.getElementById('cal-grid');
+sem.forEach(d=>{const e=document.createElement('div');e.className='cal-dn';e.textContent=d;grid.appendChild(e);});
+const ini=new Date(hoje.getFullYear(),hoje.getMonth(),1);
+const tot=new Date(hoje.getFullYear(),hoje.getMonth()+1,0).getDate();
+const evts=[20,25,30];
+for(let i=0;i<ini.getDay();i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+for(let d=1;d<=tot;d++){
+  const e=document.createElement('div');e.className='cal-day cur';
+  if(d===hoje.getDate())e.classList.add('today');
+  if(evts.includes(d)){e.classList.add('has-ev');const dot=document.createElement('div');dot.className='dot';e.appendChild(dot);}
+  e.append(d);grid.appendChild(e);
+}
+document.getElementById('entregas-list').innerHTML=`
+  <div class="task"><div class="tc"></div><div><div class="tn">Reels semana 1</div><div class="tm">Doutor Fabiano · 20/06</div></div></div>
+  <div class="task"><div class="tc"></div><div><div class="tn">TikTok lote 01</div><div class="tm">Amendoeira · 25/06</div></div></div>
+  <div class="task"><div class="tc"></div><div><div class="tn">Conteúdo mensal junho</div><div class="tm">Ótica Kaiser · 30/06</div></div></div>`;
+
+// ── INIT ──
+renderQuadro(); renderLista(); renderClientes(); renderTarefas();
 </script>
 </body>
 </html>
