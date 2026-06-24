@@ -1,10 +1,11 @@
-const CACHE = 'ethos-v1';
+const CACHE = 'ethos-v2';
 const ASSETS = [
   '/Grupo-Ethos/',
   '/Grupo-Ethos/index.html',
   '/Grupo-Ethos/manifest.json',
   '/Grupo-Ethos/icon-192.png',
   '/Grupo-Ethos/icon-512.png',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
 ];
 
 self.addEventListener('install', e => {
