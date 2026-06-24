@@ -377,6 +377,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 
   <div class="nav-group-label">Finanças</div>
   <button class="nav-btn" data-sec="financeiro" onclick="nav('financeiro',this)"><span class="nav-ic">$</span><span>Financeiro</span></button>
+  <button class="nav-btn" data-sec="cobrancas" onclick="nav('cobrancas',this)"><span class="nav-ic">◉</span><span>Cobranças</span><span class="nav-badge" id="badge-cobrancas" style="background:rgba(255,107,107,0.2);color:var(--red)">0</span></button>
 
   <div class="sb-footer">
     <button class="sb-pill ok"><div class="sb-dot"></div><span>Salvo localmente</span></button>
@@ -530,6 +531,24 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   </div>
 </div>
 
+<!-- ═══ COBRANÇAS ═══ -->
+<div class="section" id="cobrancas">
+  <div class="page-head"><div><h1><span>Cobranças</span></h1><div class="sub">Vencimentos, recebimentos e inadimplência — atualizados automaticamente</div></div>
+    <button class="btn btn-sm" onclick="lembrarTodos()">🔔 Avisar vencimentos</button>
+  </div>
+  <div class="kpi-grid" id="cob-kpis"></div>
+  <div class="grid-2-1">
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Contratos &amp; Vencimentos</div><div class="card-sub">Marque como pago para avançar o ciclo automaticamente</div></div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Cliente</th><th class="num">Valor</th><th>Vencimento</th><th>Situação</th><th style="text-align:right">Ação</th></tr></thead>
+        <tbody id="cob-tbody"></tbody>
+      </table></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">Composição</div></div><div class="chart-wrap" style="height:300px"><canvas id="ch-cob"></canvas></div></div>
+  </div>
+</div>
+
 </div><!-- content -->
 </div><!-- main -->
 </div><!-- layout -->
@@ -629,8 +648,9 @@ let custos=LS.get('custos')||seedCustos;
 let metas=LS.get('metas')||{mensal:15000,anual:180000};
 let atividades=LS.get('atividades')||[];
 let notificacoes=LS.get('notificacoes')||[];
+let pagamentos=LS.get('pagamentos')||[];
 
-function save(){['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes'].forEach(k=>LS.set(k,eval(k)));}
+function save(){['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos'].forEach(k=>LS.set(k,eval(k)));}
 
 /* ══════════════ AUTOMAÇÃO / CÁLCULOS ══════════════ */
 const K={};
@@ -657,7 +677,24 @@ function recompute(){
   K.retencao=totalClientesHist?Math.round(ativos.length/totalClientesHist*100):100;
   K.metaMensalPct=metas.mensal?Math.round(K.faturamento/metas.mensal*100):0;
   K.metaAnualPct=metas.anual?Math.round(K.faturamento*12/metas.anual*100):0;
+  // ── Cobranças ──
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const fimMes=new Date(hoje.getFullYear(),hoje.getMonth()+1,0);
+  const ym=hoje.toISOString().slice(0,7);
+  K.recebidoMes=pagamentos.filter(p=>(p.data||'').slice(0,7)===ym).reduce((a,p)=>a+Number(p.valor||0),0);
+  K.aReceber=0;K.atrasado=0;K.atrasadoQtd=0;K.venceBreveQtd=0;
+  ativos.forEach(c=>{
+    const v=Number(c.valorMensal||0);const st=billStatus(c);
+    if(st==='atrasado'){K.atrasado+=v;K.atrasadoQtd++;K.aReceber+=v;}
+    else if(c.proximoPag&&new Date(c.proximoPag+'T00:00:00')<=fimMes){K.aReceber+=v;if(st==='breve')K.venceBreveQtd++;}
+    else if(st==='breve'){K.venceBreveQtd++;}
+  });
+  K.inadimplenciaPct=K.recorrente?Math.round(K.atrasado/K.recorrente*100):0;
 }
+// dias até o vencimento; status: atrasado/breve/emdia
+function diasAteVenc(c){if(!c.proximoPag)return 999;const h=new Date();h.setHours(0,0,0,0);const v=new Date(c.proximoPag+'T00:00:00');return Math.round((v-h)/86400000);}
+function billStatus(c){const d=diasAteVenc(c);if(d<0)return'atrasado';if(d<=5)return'breve';return'emdia';}
+function pagoEsteMes(c){const ym=new Date().toISOString().slice(0,7);return pagamentos.some(p=>p.clienteId===c.id&&(p.data||'').slice(0,7)===ym);}
 function tl(pct){return pct>=100?'green':pct>=70?'yellow':'red';}
 
 /* ══════════════ HELPERS ══════════════ */
@@ -1101,7 +1138,78 @@ function salvarMetas(){metas.mensal=num('m-mensal');metas.anual=num('m-anual');c
 function editarCliente(id){mostrarToast('Edição inline em breve — use os campos do perfil');}
 
 /* ══════════════ NAVEGAÇÃO ══════════════ */
-const renderMap={dash:renderDash,executivo:renderExec,pipeline:renderPipeline,clientes:renderClientes,rentabilidade:renderRent,producao:renderProducao,tarefas:renderTarefas,calendario:renderCalendario,financeiro:renderFin};
+/* ══════════════ COBRANÇAS ══════════════ */
+const cobBadge={pago:'bg-green',atrasado:'bg-red',breve:'bg-yellow',emdia:'bg-blue'};
+const cobLabel={pago:'Pago',atrasado:'Atrasado',breve:'Vence em breve',emdia:'Em dia'};
+function renderCobrancas(){
+  document.getElementById('cob-kpis').innerHTML=`
+    <div class="kpi c-blue"><div class="kpi-top"><span class="kpi-label">A Receber no Mês</span><span class="kpi-ic">◷</span></div><div class="kpi-val">${brl(K.aReceber)}</div><div class="kpi-sub">contratos em aberto</div></div>
+    <div class="kpi c-green"><div class="kpi-top"><span class="kpi-label">Recebido</span><span class="kpi-ic">✓</span></div><div class="kpi-val">${brl(K.recebidoMes)}</div><div class="kpi-sub">já pago neste ciclo</div></div>
+    <div class="kpi c-red"><div class="kpi-top"><span class="kpi-label">Inadimplência</span><span class="kpi-ic">⚠</span></div><div class="kpi-val">${brl(K.atrasado)}</div><div class="kpi-sub">${K.atrasadoQtd} cliente(s) · ${K.inadimplenciaPct}%</div></div>
+    <div class="kpi c-yellow"><div class="kpi-top"><span class="kpi-label">Vencem em Breve</span><span class="kpi-ic">◔</span></div><div class="kpi-val">${K.venceBreveQtd}</div><div class="kpi-sub">nos próximos 5 dias</div></div>`;
+
+  const ativos=clientes.filter(c=>c.status==='Ativo').sort((a,b)=>diasAteVenc(a)-diasAteVenc(b));
+  document.getElementById('cob-tbody').innerHTML=ativos.map(c=>{
+    const pago=pagoEsteMes(c);const st=pago?'pago':billStatus(c);const d=diasAteVenc(c);
+    const quando=pago?'—':d<0?`há ${Math.abs(d)}d`:d===0?'hoje':`em ${d}d`;
+    return`<tr>
+      <td><div class="av-row"><div class="av" style="background:${avColor(c.nome)}">${ini(c.nome)}</div>${c.nome}</div></td>
+      <td class="num">${brl(c.valorMensal)}</td>
+      <td>${fmtData(c.proximoPag)} <span style="color:var(--muted);font-size:0.72rem">${quando}</span></td>
+      <td><span class="badge ${cobBadge[st]}"><span class="bd"></span>${cobLabel[st]}</span></td>
+      <td style="text-align:right">${pago
+        ?`<button class="btn btn-sm" onclick="desfazerPago('${c.id}')">↩ Estornar</button>`
+        :`<button class="btn btn-sm" onclick="lembrarUm('${c.id}')" title="Registrar lembrete">🔔</button> <button class="btn btn-sm btn-primary" onclick="marcarPago('${c.id}')">Marcar pago</button>`}</td>
+    </tr>`;
+  }).join('');
+
+  const pago=K.recebidoMes;
+  destroyChart('cob');
+  charts.cob=new Chart(document.getElementById('ch-cob'),{type:'doughnut',data:{labels:['Recebido','A receber','Atrasado'],datasets:[{data:[pago,K.aReceber-K.atrasado,K.atrasado],backgroundColor:['#2ee6a0','#4ea8ff','#ff6b6b'],borderWidth:0,hoverOffset:6}]},options:{cutout:'64%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'circle',font:{size:11}}},tooltip:{callbacks:{label:c=>c.label+': '+brl(c.parsed)}}},maintainAspectRatio:false}});
+}
+function marcarPago(id){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  if(pagoEsteMes(c))return mostrarToast('Já registrado este mês');
+  pagamentos.push({id:uid(),clienteId:c.id,cliente:c.nome,valor:Number(c.valorMensal||0),data:new Date().toISOString().slice(0,10)});
+  // avança o vencimento em 1 mês a partir da data de vencimento atual
+  const base=c.proximoPag?new Date(c.proximoPag+'T00:00:00'):new Date();
+  base.setMonth(base.getMonth()+1);c.proximoPag=base.toISOString().slice(0,10);
+  // registra um evento de pagamento no calendário do próximo vencimento
+  eventos.push({id:uid(),titulo:'Cobrança '+c.nome,cliente:c.nome,data:c.proximoPag,hora:'',responsavel:'Financeiro',local:'—',tipo:'pagamento',status:'Pendente'});
+  logAtiv(`Pagamento de <b>${c.nome}</b> recebido (${brl(c.valorMensal)})`,'$','var(--green)');
+  addNotif(`✓ ${c.nome} pagou ${brl(c.valorMensal)} · próx. venc. ${fmtData(c.proximoPag)}`,'$','var(--green)');
+  mostrarToast(`✓ Pagamento de ${c.nome} registrado · próximo ciclo agendado`);
+  refresh();
+}
+function desfazerPago(id){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  const ym=new Date().toISOString().slice(0,7);
+  const idx=pagamentos.map((p,i)=>({p,i})).filter(x=>x.p.clienteId===id&&(x.p.data||'').slice(0,7)===ym).pop();
+  if(idx){pagamentos.splice(idx.i,1);
+    // recua o vencimento em 1 mês
+    const base=c.proximoPag?new Date(c.proximoPag+'T00:00:00'):new Date();base.setMonth(base.getMonth()-1);c.proximoPag=base.toISOString().slice(0,10);
+    mostrarToast(`↩ Pagamento de ${c.nome} estornado`);refresh();}
+}
+function lembrarUm(id){const c=clientes.find(x=>x.id===id);if(!c)return;addNotif(`🔔 Lembrete de cobrança: ${c.nome} (${brl(c.valorMensal)}) vence ${fmtData(c.proximoPag)}`,'🔔','var(--yellow)');notify('Cobrança — Grupo Ethos',`${c.nome}: ${brl(c.valorMensal)} vence ${fmtData(c.proximoPag)}`);save();renderNotif();mostrarToast(`🔔 Lembrete registrado para ${c.nome}`);}
+function lembrarTodos(){
+  const alvos=clientes.filter(c=>c.status==='Ativo'&&!pagoEsteMes(c)&&['atrasado','breve'].includes(billStatus(c)));
+  if(!alvos.length)return mostrarToast('Nenhum vencimento próximo 🎉');
+  alvos.forEach(c=>addNotif(`🔔 ${billStatus(c)==='atrasado'?'ATRASADO':'Vence em breve'}: ${c.nome} (${brl(c.valorMensal)})`,'🔔',billStatus(c)==='atrasado'?'var(--red)':'var(--yellow)'));
+  notify('Cobranças — Grupo Ethos',`${alvos.length} cliente(s) com vencimento próximo ou atrasado`);
+  save();renderNotif();mostrarToast(`🔔 ${alvos.length} lembrete(s) gerado(s)`);
+}
+// alerta automático ao abrir
+function scanVencimentos(){
+  const alvos=clientes.filter(c=>c.status==='Ativo'&&!pagoEsteMes(c)&&['atrasado','breve'].includes(billStatus(c)));
+  alvos.forEach(c=>{
+    const st=billStatus(c);
+    const jaTem=notificacoes.some(n=>n.txt.includes(c.nome)&&n.txt.includes('venc'));
+    if(!jaTem)addNotif(`${st==='atrasado'?'⚠ Pagamento ATRASADO':'⏰ Vencimento próximo'}: ${c.nome} (${brl(c.valorMensal)}) — vence ${fmtData(c.proximoPag)}`,'◉',st==='atrasado'?'var(--red)':'var(--yellow)');
+  });
+  document.getElementById('badge-cobrancas').textContent=K.atrasadoQtd+K.venceBreveQtd;
+}
+
+const renderMap={dash:renderDash,executivo:renderExec,pipeline:renderPipeline,clientes:renderClientes,rentabilidade:renderRent,producao:renderProducao,tarefas:renderTarefas,calendario:renderCalendario,financeiro:renderFin,cobrancas:renderCobrancas};
 let secAtual='dash';
 function nav(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -1111,8 +1219,8 @@ function nav(id,btn){
   secAtual=id;if(renderMap[id])renderMap[id]();
   if(window.innerWidth<=760)document.getElementById('sidebar').classList.remove('open');
 }
-function refresh(){save();recompute();if(renderMap[secAtual])renderMap[secAtual]();renderClientes();renderTarefas();renderAtividades();}
-function renderAll(){recompute();Object.values(renderMap).forEach(fn=>{try{fn()}catch(e){}});renderAtividades();renderNotif();}
+function refresh(){save();recompute();if(renderMap[secAtual])renderMap[secAtual]();renderClientes();renderTarefas();try{scanVencimentos()}catch(e){}renderAtividades();renderNotif();}
+function renderAll(){recompute();Object.values(renderMap).forEach(fn=>{try{fn()}catch(e){}});try{scanVencimentos()}catch(e){}renderAtividades();renderNotif();}
 
 /* ══════════════ PANELS ══════════════ */
 function togglePanel(id){const p=document.getElementById('panel-'+id);const wasOpen=p.classList.contains('open');document.querySelectorAll('.panel').forEach(x=>x.classList.remove('open'));if(!wasOpen){p.classList.add('open');if(id==='notif'){notificacoes.forEach(n=>n.lida=true);save();updateNotifCount();}}}
@@ -1168,6 +1276,16 @@ function entrar(){document.getElementById('splash').classList.add('hide');setTim
 setTimeout(()=>{if(document.getElementById('splash').style.display!=='none')entrar();},7000);
 
 /* ══════════════ INIT ══════════════ */
+// normaliza vencimentos antigos (dos dados de exemplo) uma única vez
+if(!LS.get('vencNorm')){
+  const offs=[-7,-3,2,4,8,14,19,25,30,11];
+  clientes.filter(c=>c.status==='Ativo').forEach((c,i)=>{
+    if(c.proximoPag&&new Date(c.proximoPag+'T00:00:00')<new Date('2026-01-01')){
+      const d=new Date();d.setDate(d.getDate()+(offs[i%offs.length]));c.proximoPag=d.toISOString().slice(0,10);
+    }
+  });
+  LS.set('vencNorm',true);save();
+}
 document.getElementById('dash-data').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 if('Notification'in window&&Notification.permission==='granted')document.getElementById('btn-notif').style.display='none';
 window.addEventListener('load',()=>renderAll());
