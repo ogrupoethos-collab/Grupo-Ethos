@@ -211,6 +211,11 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 .kcard{background:var(--surfaceSolid);border:1px solid var(--border);border-radius:var(--rs);padding:12px 13px;cursor:grab;transition:all 0.16s;}
 .kcard:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.3);}
 .kcard.dragging{opacity:0.5;cursor:grabbing;}
+.kcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;}
+.kcard-acts{display:flex;gap:3px;opacity:0.45;transition:opacity 0.14s;flex-shrink:0;}
+.kcard:hover .kcard-acts{opacity:1;}
+.kc-btn{width:20px;height:20px;border-radius:6px;border:1px solid var(--border);background:rgba(5,8,15,0.6);color:var(--muted);font-size:0.64rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.13s;padding:0;}
+.kc-btn:hover{color:var(--red);border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.12);}
 .kcard-title{font-size:0.8rem;font-weight:600;color:#fff;margin-bottom:5px;}
 .kcard-meta{font-size:0.7rem;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;}
 .kcard-val{font-size:0.78rem;font-weight:700;color:var(--green);}
@@ -821,7 +826,7 @@ function renderPipeline(){
       <div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropPipe(event,'${et}')">
         ${items.map(p=>`<div class="kcard" draggable="true" data-id="${p.id}" ondragstart="dragStart(event,'${p.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-title">${p.nome}</div>
+          <div class="kcard-top"><div class="kcard-title">${p.nome}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();editarLead('${p.id}')" title="Editar">✎</button><button class="kc-btn" onclick="event.stopPropagation();delLead('${p.id}')" title="Excluir">✕</button></div></div>
           <div style="font-size:0.7rem;color:var(--muted)">${p.empresa||''}</div>
           <div class="kcard-meta"><span class="kcard-val">${brl(p.valor)}</span></div>
         </div>`).join('')}
@@ -945,6 +950,7 @@ function abrirCliente(id){
         </div>
       </div>
       <div class="modal-foot">
+        <button class="btn" style="margin-right:auto;color:var(--red);border-color:rgba(255,107,107,0.3)" onclick="excluirCliente('${c.id}')">🗑 Excluir</button>
         <button class="btn" onclick="editarCliente('${c.id}')">✎ Editar</button>
         <button class="btn" onclick="salvarDriveCliente('${c.id}')">Salvar Drive</button>
         <button class="btn btn-primary" onclick="closeModalEl()">Fechar</button>
@@ -994,7 +1000,7 @@ function renderProducao(){
       <div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropProd(event,'${et}')">
         ${items.map(p=>`<div class="kcard" draggable="true" data-id="${p.id}" ondragstart="dragStart(event,'${p.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-title">${p.cliente}</div>
+          <div class="kcard-top"><div class="kcard-title">${p.cliente}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();delProjeto('${p.id}')" title="Excluir">✕</button></div></div>
           <div class="kcard-meta"><span class="badge ${prioBadge[p.prioridade]}">${p.prioridade}</span><span>▶ ${p.qtd} vídeos</span></div>
           <div class="kcard-meta"><span>👤 ${p.editor}</span>${p.prazo?`<span>⏱ ${fmtData(p.prazo)}</span>`:''}</div>
         </div>`).join('')}
@@ -1014,18 +1020,19 @@ function renderTarefas(){
   document.getElementById('tarefas-sub').textContent=`${pend} pendentes · ${tarefas.length} no total`;
   document.getElementById('badge-tarefas').textContent=pend;
   document.getElementById('tarefas-lista').innerHTML=tarefas.map(t=>`
-    <div class="task ${t.done?'done':''}" onclick="toggleTarefa('${t.id}')">
-      <div class="tc"></div>
-      <div style="flex:1"><div class="tn">${t.titulo}</div>
+    <div class="task ${t.done?'done':''}">
+      <div class="tc" onclick="toggleTarefa('${t.id}')"></div>
+      <div style="flex:1" onclick="toggleTarefa('${t.id}')"><div class="tn">${t.titulo}</div>
         <div class="tm"><span class="badge ${prioBadge[t.prioridade]}">${t.prioridade}</span>${t.cliente?`<span>${t.cliente}</span>`:''}${t.responsavel?`<span>👤 ${t.responsavel}</span>`:''}${t.prazo?`<span>⏱ ${fmtData(t.prazo)}</span>`:''}</div>
-      </div></div>`).join('')||'<div class="empty"><div class="empty-ic">◻</div>Nenhuma tarefa</div>';
+      </div>
+      <button class="del-btn" onclick="event.stopPropagation();delTarefa('${t.id}')" title="Excluir">✕</button></div>`).join('')||'<div class="empty"><div class="empty-ic">◻</div>Nenhuma tarefa</div>';
   // kanban
   document.getElementById('tarefas-kanban').innerHTML=TAREFA_ETAPAS.map(([et,cor])=>{
     const items=tarefas.filter(t=>(t.done?'Concluído':t.status)===et);
     return`<div class="kcol"><div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropTarefa(event,'${et}')">
         ${items.map(t=>`<div class="kcard" draggable="true" data-id="${t.id}" ondragstart="dragStart(event,'${t.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-title">${t.titulo}</div><div class="kcard-meta"><span class="badge ${prioBadge[t.prioridade]}">${t.prioridade}</span>${t.responsavel?`<span>👤 ${t.responsavel}</span>`:''}</div>
+          <div class="kcard-top"><div class="kcard-title">${t.titulo}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();delTarefa('${t.id}')" title="Excluir">✕</button></div></div><div class="kcard-meta"><span class="badge ${prioBadge[t.prioridade]}">${t.prioridade}</span>${t.responsavel?`<span>👤 ${t.responsavel}</span>`:''}</div>
         </div>`).join('')}
       </div></div>`;
   }).join('');
@@ -1168,6 +1175,18 @@ function salvarCliente(){
   closeModalEl();refresh();mostrarToast(`✓ ${nome} criado · faturamento atualizado`);
 }
 function salvarLead(){if(!val('m-lnome'))return mostrarToast('Informe o nome');pipeline.push({id:uid(),nome:val('m-lnome'),empresa:val('m-lempresa'),etapa:'Lead',valor:num('m-lvalor'),contato:val('m-lcontato')});logAtiv(`Lead <b>${val('m-lnome')}</b> adicionado`,'+','var(--blue-lit)');closeModalEl();refresh();mostrarToast('✓ Lead adicionado');}
+function editarLead(id){
+  const p=pipeline.find(x=>x.id===id);if(!p)return;
+  showModal(`<div class="modal"><div class="modal-head"><h2>Editar Lead</h2><button class="modal-close" onclick="closeModalEl()">✕</button></div><div class="modal-body">
+    <div class="field"><label>Nome</label><input id="el-nome" value="${p.nome||''}"/></div>
+    <div class="field"><label>Empresa</label><input id="el-empresa" value="${p.empresa||''}"/></div>
+    <div class="field-row"><div class="field"><label>Valor estimado (R$)</label><input type="number" id="el-valor" value="${p.valor||0}"/></div><div class="field"><label>Contato</label><input id="el-contato" value="${p.contato||''}"/></div></div>
+    </div><div class="modal-foot"><button class="btn" style="margin-right:auto;color:var(--red);border-color:rgba(255,107,107,0.3)" onclick="delLead('${p.id}')">🗑 Excluir</button><button class="btn" onclick="closeModalEl()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoLead('${p.id}')">Salvar</button></div></div>`);
+}
+function salvarEdicaoLead(id){const p=pipeline.find(x=>x.id===id);if(!p)return;const g=i=>document.getElementById(i)?.value||'';p.nome=g('el-nome').trim()||p.nome;p.empresa=g('el-empresa').trim();p.valor=parseFloat(g('el-valor'))||0;p.contato=g('el-contato').trim();closeModalEl();refresh();mostrarToast('✓ Lead atualizado');}
+function delLead(id){const p=pipeline.find(x=>x.id===id);if(!p)return;if(!confirm(`Excluir o lead ${p.nome}?`))return;pipeline=pipeline.filter(x=>x.id!==id);logAtiv(`Lead <b>${p.nome}</b> excluído`,'🗑','var(--red)');closeModalEl();refresh();mostrarToast(`${p.nome} removido do pipeline`);}
+function delProjeto(id){const p=producao.find(x=>x.id===id);if(!p)return;if(!confirm(`Excluir o projeto de ${p.cliente} (${p.qtd} vídeos)?`))return;producao=producao.filter(x=>x.id!==id);logAtiv(`Projeto <b>${p.cliente}</b> excluído`,'🗑','var(--red)');refresh();mostrarToast('Projeto removido');}
+function delTarefa(id){const t=tarefas.find(x=>x.id===id);if(!t)return;if(!confirm(`Excluir a tarefa "${t.titulo}"?`))return;tarefas=tarefas.filter(x=>x.id!==id);refresh();mostrarToast('Tarefa removida');}
 function salvarProjeto(){producao.push({id:uid(),cliente:val('m-pcliente'),qtd:num('m-pqtd'),prazo:val('m-pprazo'),editor:val('m-peditor'),prioridade:val('m-pprio'),etapa:'Briefing'});closeModalEl();refresh();mostrarToast('✓ Projeto criado');}
 function salvarTarefa(){if(!val('m-ttitulo'))return mostrarToast('Informe a tarefa');tarefas.push({id:uid(),titulo:val('m-ttitulo'),cliente:val('m-tcliente'),prioridade:val('m-tprio'),responsavel:val('m-tresp'),prazo:val('m-tprazo'),status:'A fazer',done:false});closeModalEl();refresh();mostrarToast('✓ Tarefa criada');}
 function salvarEvento(){if(!val('ev-titulo')||!val('ev-data'))return mostrarToast('Título e data obrigatórios');eventos.push({id:uid(),titulo:val('ev-titulo'),cliente:val('ev-cliente'),data:val('ev-data'),hora:val('ev-hora'),responsavel:val('ev-resp'),local:val('ev-local'),tipo:val('ev-tipo'),status:'Confirmado'});logAtiv(`Evento <b>${val('ev-titulo')}</b> agendado`,'◷','var(--purple)');closeModalEl();refresh();mostrarToast('✓ Evento agendado');}
