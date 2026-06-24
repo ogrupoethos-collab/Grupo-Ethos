@@ -175,6 +175,11 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 .edit-cell:focus{background:rgba(78,168,255,0.2);box-shadow:0 0 0 1.5px var(--border3);}
 .del-btn{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.14s;}
 .del-btn:hover{color:var(--red);border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.1);}
+.row-sel{appearance:none;-webkit-appearance:none;border:none;border-radius:20px;font-size:0.69rem;font-weight:700;padding:3px 10px;cursor:pointer;font-family:inherit;outline:none;}
+.row-sel option{background:var(--bg3);color:var(--text);font-weight:500;}
+.row-date{background:rgba(78,168,255,0.06);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:0.74rem;font-family:inherit;padding:4px 7px;outline:none;cursor:pointer;transition:border-color 0.14s;}
+.row-date:hover,.row-date:focus{border-color:var(--border2);}
+.row-date::-webkit-calendar-picker-indicator{filter:invert(0.6) sepia(1) saturate(3) hue-rotate(190deg);cursor:pointer;}
 
 /* ── BADGE ── */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;white-space:nowrap;}
@@ -845,19 +850,36 @@ function dropPipe(e,etapa){
 
 /* ══════════════ CLIENTES ══════════════ */
 function renderClientes(){
-  document.getElementById('clientes-sub').textContent=`${clientes.filter(c=>c.status==='Ativo').length} ativos · ${brl(K.recorrente)} recorrente/mês`;
+  document.getElementById('clientes-sub').textContent=`${clientes.filter(c=>c.status==='Ativo').length} ativos · ${brl(K.recorrente)} recorrente/mês · clique para editar`;
   document.getElementById('badge-clientes').textContent=clientes.filter(c=>c.status==='Ativo').length;
+  const opt=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join('');
   document.getElementById('clientes-tbody').innerHTML=clientes.map(c=>`
-    <tr onclick="abrirCliente('${c.id}')">
-      <td><div class="av-row"><div class="av" style="background:${avColor(c.nome)}">${ini(c.nome)}</div><div><div style="font-weight:600">${c.nome}</div><div style="font-size:0.7rem;color:var(--muted)">${c.empresa||''}</div></div></div></td>
-      <td>${c.servico}</td>
-      <td><span class="badge ${planoBadge[c.plano]}">${c.plano}</span></td>
-      <td class="pos">${brl(c.valorMensal)}</td>
-      <td><span class="badge ${c.status==='Ativo'?'bg-green':c.status==='Pausado'?'bg-yellow':'bg-red'}"><span class="bd"></span>${c.status}</span></td>
-      <td style="color:var(--muted)">${fmtData(c.dataInicio)}</td>
-      <td style="color:var(--muted)">${fmtData(c.proximoPag)}</td>
-      <td><div class="av-row"><div class="av" style="background:${avColor(c.responsavel||'?')};width:24px;height:24px;font-size:0.58rem">${ini(c.responsavel||'?')}</div><span style="font-size:0.78rem">${c.responsavel||'—'}</span></div></td>
+    <tr>
+      <td><div class="av-row">
+        <div class="av" style="background:${avColor(c.nome)};cursor:pointer" onclick="abrirCliente('${c.id}')" title="Abrir perfil">${ini(c.nome)}</div>
+        <div><div style="font-weight:600"><span class="edit-cell" contenteditable onblur="setCli('${c.id}','nome',this.textContent)">${c.nome}</span></div>
+        <div style="font-size:0.7rem;color:var(--muted)"><span class="edit-cell" contenteditable onblur="setCli('${c.id}','empresa',this.textContent)">${c.empresa||'—'}</span></div></div>
+      </div></td>
+      <td><span class="edit-cell" contenteditable onblur="setCli('${c.id}','servico',this.textContent)">${c.servico}</span></td>
+      <td><select class="row-sel ${planoBadge[c.plano]}" onchange="setCli('${c.id}','plano',this.value)">${opt(PLANOS,c.plano)}</select></td>
+      <td class="pos"><span class="edit-cell" contenteditable onblur="setCli('${c.id}','valorMensal',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(c.valorMensal||0)}</span></td>
+      <td><select class="row-sel ${c.status==='Ativo'?'bg-green':c.status==='Pausado'?'bg-yellow':'bg-red'}" onchange="setCli('${c.id}','status',this.value)">${opt(['Ativo','Pausado','Perdido'],c.status)}</select></td>
+      <td><input type="date" class="row-date" value="${c.dataInicio||''}" onchange="setCli('${c.id}','dataInicio',this.value)"/></td>
+      <td><input type="date" class="row-date" value="${c.proximoPag||''}" onchange="setCli('${c.id}','proximoPag',this.value)"/></td>
+      <td><span class="edit-cell" contenteditable onblur="setCli('${c.id}','responsavel',this.textContent)">${c.responsavel||'—'}</span></td>
     </tr>`).join('');
+}
+function setCli(id,campo,t){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  const numFields=['valorMensal'];
+  c[campo]=numFields.includes(campo)?parseNum(t):String(t).trim();
+  save();recompute();
+  // atualização leve: sub + badge (não reconstrói a tabela p/ não perder o cursor)
+  document.getElementById('clientes-sub').textContent=`${clientes.filter(x=>x.status==='Ativo').length} ativos · ${brl(K.recorrente)} recorrente/mês · clique para editar`;
+  document.getElementById('badge-clientes').textContent=clientes.filter(x=>x.status==='Ativo').length;
+  // campos que mudam cores/badges → re-render completo (selects não têm cursor de texto)
+  if(['plano','status'].includes(campo)){renderClientes();}
+  scanVencimentos();
 }
 function fmtData(d){if(!d)return'—';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}
 
