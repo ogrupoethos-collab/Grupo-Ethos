@@ -170,6 +170,11 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;}
 td.pos{text-align:right;color:var(--green);font-weight:700;}
 td.neg{text-align:right;color:var(--red);font-weight:700;}
 .total-row td{font-weight:800;border-top:1px solid var(--border2);background:rgba(41,121,255,0.05);}
+.edit-cell{outline:none;border-radius:6px;padding:2px 7px;margin:-2px -2px;cursor:text;transition:background 0.13s;display:inline-block;min-width:30px;}
+.edit-cell:hover{background:rgba(78,168,255,0.12);}
+.edit-cell:focus{background:rgba(78,168,255,0.2);box-shadow:0 0 0 1.5px var(--border3);}
+.del-btn{width:24px;height:24px;border-radius:7px;border:1px solid var(--border);background:none;color:var(--muted);font-size:0.72rem;cursor:pointer;transition:all 0.14s;}
+.del-btn:hover{color:var(--red);border-color:rgba(255,107,107,0.4);background:rgba(255,107,107,0.1);}
 
 /* ── BADGE ── */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:0.68rem;font-weight:700;white-space:nowrap;}
@@ -515,15 +520,15 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   </div>
   <div class="kpi-grid" id="fin-kpis"></div>
   <div class="grid-2">
-    <div class="card"><div class="card-head"><div class="card-title">Receitas</div></div><div class="tbl-wrap"><table>
-      <thead><tr><th>Origem</th><th>Tipo</th><th class="num">Valor</th></tr></thead>
+    <div class="card"><div class="card-head"><div><div class="card-title">Receitas</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
+      <thead><tr><th>Origem</th><th>Tipo</th><th class="num">Valor</th><th></th></tr></thead>
       <tbody id="fin-receitas"></tbody>
-      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="pos" id="fin-rec-total"></td></tr></tfoot>
+      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="pos" id="fin-rec-total"></td><td></td></tr></tfoot>
     </table></div></div>
-    <div class="card"><div class="card-head"><div class="card-title">Custos</div></div><div class="tbl-wrap"><table>
-      <thead><tr><th>Descrição</th><th>Categoria</th><th class="num">Valor</th></tr></thead>
+    <div class="card"><div class="card-head"><div><div class="card-title">Custos</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
+      <thead><tr><th>Descrição</th><th>Categoria</th><th class="num">Valor</th><th></th></tr></thead>
       <tbody id="fin-custos"></tbody>
-      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="neg" id="fin-cus-total"></td></tr></tfoot>
+      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="neg" id="fin-cus-total"></td><td></td></tr></tfoot>
     </table></div></div>
   </div>
   <div class="card"><div class="card-head"><div class="card-title">Demonstrativo de Resultado</div></div>
@@ -1050,12 +1055,24 @@ function renderFin(){
     <div class="kpi c-yellow"><div class="kpi-top"><span class="kpi-label">Margem de Lucro</span><span class="kpi-ic">%</span></div><div class="kpi-val">${K.margem}%</div><div class="kpi-sub">sobre faturamento</div></div>`;
 
   const ativos=clientes.filter(c=>c.status==='Ativo');
-  let recHtml=ativos.map(c=>`<tr><td>${c.nome}</td><td><span class="badge bg-blue">Recorrente</span></td><td class="pos">${brl(c.valorMensal)}</td></tr>`).join('');
-  recHtml+=receitasAvulsas.map(r=>`<tr><td>${r.desc}</td><td><span class="badge bg-purple">Avulsa</span></td><td class="pos">${brl(r.valor)}</td></tr>`).join('');
-  document.getElementById('fin-receitas').innerHTML=recHtml;
+  let recHtml=ativos.map(c=>`<tr>
+    <td><span style="cursor:pointer;border-bottom:1px dashed var(--border2)" onclick="abrirCliente('${c.id}')">${c.nome}</span></td>
+    <td><span class="badge bg-blue">Recorrente</span></td>
+    <td class="pos"><span class="edit-cell" contenteditable onblur="setClienteValor('${c.id}',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(c.valorMensal||0)}</span></td>
+    <td style="text-align:right"><span style="color:var(--muted2)">via cliente</span></td></tr>`).join('');
+  recHtml+=receitasAvulsas.map(r=>`<tr>
+    <td><span class="edit-cell" contenteditable onblur="setReceita('${r.id}','desc',this.textContent)">${r.desc}</span></td>
+    <td><span class="badge bg-purple">Avulsa</span></td>
+    <td class="pos"><span class="edit-cell" contenteditable onblur="setReceita('${r.id}','valor',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(r.valor||0)}</span></td>
+    <td style="text-align:right"><button class="del-btn" onclick="delReceita('${r.id}')" title="Excluir">✕</button></td></tr>`).join('');
+  document.getElementById('fin-receitas').innerHTML=recHtml||'<tr><td colspan="4" class="empty">Sem receitas</td></tr>';
   document.getElementById('fin-rec-total').textContent=brl(K.faturamento);
 
-  document.getElementById('fin-custos').innerHTML=custos.map(c=>`<tr><td>${c.desc}</td><td><span class="badge ${c.tipo==='fixo'?'bg-orange':'bg-gray'}">${c.cat}</span></td><td class="neg">${brl(c.valor)}</td></tr>`).join('');
+  document.getElementById('fin-custos').innerHTML=custos.map(c=>`<tr>
+    <td><span class="edit-cell" contenteditable onblur="setCusto('${c.id}','desc',this.textContent)">${c.desc}</span></td>
+    <td><span class="badge ${c.tipo==='fixo'?'bg-orange':'bg-gray'}" style="cursor:pointer" onclick="toggleCustoTipo('${c.id}')" title="Alternar fixo/variável">${c.cat} · ${c.tipo==='fixo'?'Fixo':'Var'}</span></td>
+    <td class="neg"><span class="edit-cell" contenteditable onblur="setCusto('${c.id}','valor',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(c.valor||0)}</span></td>
+    <td style="text-align:right"><button class="del-btn" onclick="delCusto('${c.id}')" title="Excluir">✕</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Sem custos</td></tr>';
   document.getElementById('fin-cus-total').textContent=brl(K.custoTotal);
 
   document.getElementById('fin-dre').innerHTML=`
@@ -1135,7 +1152,76 @@ function salvarEvento(){if(!val('ev-titulo')||!val('ev-data'))return mostrarToas
 function salvarReceita(){if(!val('m-rdesc'))return mostrarToast('Informe a descrição');receitasAvulsas.push({id:uid(),desc:val('m-rdesc'),valor:num('m-rvalor'),data:new Date().toISOString().slice(0,10)});closeModalEl();refresh();mostrarToast('✓ Receita adicionada');}
 function salvarCusto(){if(!val('m-cdesc'))return mostrarToast('Informe a descrição');custos.push({id:uid(),desc:val('m-cdesc'),cat:val('m-ccat'),tipo:val('m-ctipo'),valor:num('m-cvalor')});closeModalEl();refresh();mostrarToast('✓ Custo adicionado');}
 function salvarMetas(){metas.mensal=num('m-mensal');metas.anual=num('m-anual');closeModalEl();refresh();mostrarToast('✓ Metas atualizadas');}
-function editarCliente(id){mostrarToast('Edição inline em breve — use os campos do perfil');}
+// edição inline do financeiro
+const parseNum=t=>parseFloat(String(t).replace(/[^0-9,.-]/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.'))||0;
+// atualiza apenas KPIs e totais (sem reconstruir as linhas, evita quebrar a edição/clique)
+function finRecalc(){save();recompute();
+  const el=document.getElementById('fin-rec-total');if(el)el.textContent=brl(K.faturamento);
+  const ec=document.getElementById('fin-cus-total');if(ec)ec.textContent=brl(K.custoTotal);
+  renderFinDerivados();
+}
+function renderFinDerivados(){
+  // reconstrói só KPIs e DRE
+  const tmp={fat:document.getElementById('fin-kpis'),dre:document.getElementById('fin-dre')};
+  if(tmp.fat){tmp.fat.innerHTML=`
+    <div class="kpi c-green"><div class="kpi-top"><span class="kpi-label">Faturamento</span><span class="kpi-ic">$</span></div><div class="kpi-val">${brl(K.faturamento)}</div><div class="kpi-sub">recorrente + avulso</div></div>
+    <div class="kpi c-blue"><div class="kpi-top"><span class="kpi-label">Receita Recorrente</span><span class="kpi-ic">↻</span></div><div class="kpi-val">${brl(K.recorrente)}</div><div class="kpi-sub">contratos ativos</div></div>
+    <div class="kpi c-red"><div class="kpi-top"><span class="kpi-label">Custos Totais</span><span class="kpi-ic">▦</span></div><div class="kpi-val">${brl(K.custoTotal)}</div><div class="kpi-sub">fixos + variáveis</div></div>
+    <div class="kpi c-green"><div class="kpi-top"><span class="kpi-label">Lucro Líquido</span><span class="kpi-ic">▲</span></div><div class="kpi-val">${brl(K.lucro)}</div><div class="kpi-sub">margem ${K.margem}%</div></div>
+    <div class="kpi c-purple"><div class="kpi-top"><span class="kpi-label">Ticket Médio</span><span class="kpi-ic">◆</span></div><div class="kpi-val">${brl(K.ticket)}</div><div class="kpi-sub">por cliente</div></div>
+    <div class="kpi c-yellow"><div class="kpi-top"><span class="kpi-label">Margem de Lucro</span><span class="kpi-ic">%</span></div><div class="kpi-val">${K.margem}%</div><div class="kpi-sub">sobre faturamento</div></div>`;}
+  if(tmp.dre){tmp.dre.innerHTML=`
+    <div class="info-row" style="padding:12px 20px"><span class="lbl">(+) Receita recorrente</span><span class="val" style="color:var(--green)">${brl(K.recorrente)}</span></div>
+    <div class="info-row" style="padding:12px 20px"><span class="lbl">(+) Receita avulsa</span><span class="val" style="color:var(--green)">${brl(K.avulsa)}</span></div>
+    <div class="info-row" style="padding:12px 20px"><span class="lbl">(=) Faturamento total</span><span class="val" style="font-weight:800">${brl(K.faturamento)}</span></div>
+    <div class="info-row" style="padding:12px 20px"><span class="lbl">(−) Custos fixos</span><span class="val" style="color:var(--red)">${brl(K.custoFixo)}</span></div>
+    <div class="info-row" style="padding:12px 20px"><span class="lbl">(−) Custos variáveis</span><span class="val" style="color:var(--red)">${brl(K.custoVar)}</span></div>
+    <div class="info-row" style="padding:14px 20px;background:rgba(41,121,255,0.05)"><span class="lbl" style="font-weight:700;color:var(--text)">(=) Lucro líquido</span><span class="val" style="font-size:1.1rem;font-weight:800;color:${K.lucro>=0?'var(--green)':'var(--red)'}">${brl(K.lucro)}</span></div>`;}
+}
+function setClienteValor(id,t){const c=clientes.find(x=>x.id===id);if(c){c.valorMensal=parseNum(t);finRecalc();}}
+function setReceita(id,campo,t){const r=receitasAvulsas.find(x=>x.id===id);if(r){r[campo]=campo==='valor'?parseNum(t):String(t).trim();finRecalc();}}
+function delReceita(id){receitasAvulsas=receitasAvulsas.filter(x=>x.id!==id);refresh();mostrarToast('Receita removida');}
+function setCusto(id,campo,t){const c=custos.find(x=>x.id===id);if(c){c[campo]=campo==='valor'?parseNum(t):String(t).trim();finRecalc();}}
+function delCusto(id){custos=custos.filter(x=>x.id!==id);refresh();mostrarToast('Custo removido');}
+function toggleCustoTipo(id){const c=custos.find(x=>x.id===id);if(c){c.tipo=c.tipo==='fixo'?'variavel':'fixo';refresh();}}
+function editarCliente(id){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  const opt=(arr,sel)=>arr.map(o=>`<option ${o===sel?'selected':''}>${o}</option>`).join('');
+  showModal(`<div class="modal lg"><div class="modal-head"><div><h2>Editar ${c.nome}</h2><div class="mh-sub">Alterações recalculam faturamento, rentabilidade e cobranças</div></div><button class="modal-close" onclick="closeModalEl()">✕</button></div>
+    <div class="modal-body">
+      <div class="field-row"><div class="field"><label>Nome</label><input id="e-nome" value="${c.nome||''}"/></div><div class="field"><label>Empresa</label><input id="e-empresa" value="${c.empresa||''}"/></div></div>
+      <div class="field"><label>Serviço contratado</label><input id="e-servico" value="${c.servico||''}"/></div>
+      <div class="field-row"><div class="field"><label>Plano</label><select id="e-plano">${opt(PLANOS,c.plano)}</select></div><div class="field"><label>Valor mensal (R$)</label><input type="number" id="e-valor" value="${c.valorMensal||0}"/></div></div>
+      <div class="field-row"><div class="field"><label>Status</label><select id="e-status">${opt(['Ativo','Pausado','Perdido'],c.status)}</select></div><div class="field"><label>Responsável</label><input id="e-resp" value="${c.responsavel||''}"/></div></div>
+      <div class="field-row"><div class="field"><label>Data de início</label><input type="date" id="e-inicio" value="${c.dataInicio||''}"/></div><div class="field"><label>Próximo vencimento</label><input type="date" id="e-venc" value="${c.proximoPag||''}"/></div></div>
+      <div class="field-row"><div class="field"><label>Horas/mês</label><input type="number" id="e-horas" value="${c.horas||0}"/></div><div class="field"><label>Custo/hora (R$)</label><input type="number" id="e-custohora" value="${c.custoHora||50}"/></div></div>
+      <div class="field-row"><div class="field"><label>Vídeos contratados</label><input type="number" id="e-vcontr" value="${c.videosContratados||0}"/></div><div class="field"><label>Vídeos entregues</label><input type="number" id="e-ventr" value="${c.videosEntregues||0}"/></div></div>
+      <div class="field"><label>Link Google Drive</label><input id="e-drive" value="${c.drive||''}"/></div>
+      <div class="field"><label>Redes sociais</label><input id="e-redes" value="${c.redes||''}"/></div>
+      <div class="field"><label>Briefing</label><textarea id="e-briefing">${c.briefing||''}</textarea></div>
+      <div class="field"><label>Observações</label><textarea id="e-obs">${c.obs||''}</textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn" style="margin-right:auto;color:var(--red);border-color:rgba(255,107,107,0.3)" onclick="excluirCliente('${c.id}')">🗑 Excluir cliente</button><button class="btn" onclick="abrirCliente('${c.id}')">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoCliente('${c.id}')">Salvar alterações</button></div></div>`);
+}
+function salvarEdicaoCliente(id){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  const g=i=>{const e=document.getElementById(i);return e?e.value:'';};
+  c.nome=g('e-nome').trim()||c.nome;c.empresa=g('e-empresa').trim();c.servico=g('e-servico').trim();
+  c.plano=g('e-plano');c.valorMensal=parseFloat(g('e-valor'))||0;c.status=g('e-status');c.responsavel=g('e-resp').trim();
+  c.dataInicio=g('e-inicio');c.proximoPag=g('e-venc');
+  c.horas=parseFloat(g('e-horas'))||0;c.custoHora=parseFloat(g('e-custohora'))||50;
+  c.videosContratados=parseInt(g('e-vcontr'))||0;c.videosEntregues=parseInt(g('e-ventr'))||0;
+  c.drive=g('e-drive').trim();c.redes=g('e-redes').trim();c.briefing=g('e-briefing').trim();c.obs=g('e-obs').trim();
+  logAtiv(`Cliente <b>${c.nome}</b> atualizado`,'✎','var(--blue-lit)');
+  closeModalEl();refresh();mostrarToast(`✓ ${c.nome} atualizado · dados recalculados`);
+}
+function excluirCliente(id){
+  const c=clientes.find(x=>x.id===id);if(!c)return;
+  if(!confirm(`Excluir o cliente ${c.nome}? Esta ação não pode ser desfeita.`))return;
+  clientes=clientes.filter(x=>x.id!==id);
+  logAtiv(`Cliente <b>${c.nome}</b> excluído`,'🗑','var(--red)');
+  closeModalEl();refresh();mostrarToast(`${c.nome} removido · faturamento recalculado`);
+}
 
 /* ══════════════ NAVEGAÇÃO ══════════════ */
 /* ══════════════ COBRANÇAS ══════════════ */
