@@ -1,0 +1,21 @@
+{
+  "name": "Grupo Ethos Hub",
+  "short_name": "Ethos",
+  "description": "Hub de gestão do Grupo Ethos — produção, finanças e agenda",
+  "start_url": "/Grupo-Ethos/",
+  "scope": "/Grupo-Ethos/",
+  "display": "standalone",
+  "background_color": "#04080f",
+  "theme_color": "#2979ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Fila de Edição", "url": "/Grupo-Ethos/#fila",      "description": "Ver vídeos pendentes" },
+    { "name": "Financeiro",     "url": "/Grupo-Ethos/#financeiro", "description": "Ver financeiro" },
+    { "name": "Agenda",         "url": "/Grupo-Ethos/#agenda",     "description": "Ver compromissos" }
+  ],
+  "categories": ["productivity", "business"]
+}

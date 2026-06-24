@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "PowerShell(Get-Command node, python3, py, php -ErrorAction SilentlyContinue)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__visualize__read_me",
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; Set-Location \"C:\\\\Users\\\\vinic\\\\Grupo Ethos\"; git add hub/index.html; git commit -m \"Redesign hub: visual azul estilo iOS/Opal com sidebar e cards\"; git push -u origin hub/redesign-azul 2>&1)"
     ]
   }
 }
