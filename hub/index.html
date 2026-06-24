@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>Grupo Ethos — Hub Operacional</title>
 <meta name="theme-color" content="#2979ff"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -72,7 +72,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .layout{display:flex;min-height:100vh;}
 
 /* ── SIDEBAR ── */
-.sidebar{width:236px;flex-shrink:0;background:rgba(5,8,15,0.85);border-right:1px solid var(--border);backdrop-filter:var(--glass);padding:22px 13px;display:flex;flex-direction:column;gap:2px;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;}
+.sidebar{width:236px;flex-shrink:0;background:rgba(5,8,15,0.85);border-right:1px solid var(--border);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);padding:22px 13px;display:flex;flex-direction:column;gap:2px;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;}
 .logo{padding:4px 10px 20px;}
 .logo-name{font-size:0.94rem;font-weight:800;color:#fff;letter-spacing:0.1em;display:flex;align-items:center;gap:9px;}
 .logo-dot{width:8px;height:8px;background:linear-gradient(135deg,var(--blue),var(--green));border-radius:50%;box-shadow:0 0 12px var(--blue);}
@@ -94,7 +94,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .main{margin-left:236px;flex:1;min-width:0;}
 
 /* ── TOPBAR ── */
-.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;padding:14px 32px;background:rgba(5,8,15,0.7);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;padding:14px 32px;background:rgba(5,8,15,0.7);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);border-bottom:1px solid var(--border);}
 .search-box{flex:1;max-width:440px;position:relative;}
 .search-box input{width:100%;padding:9px 14px 9px 38px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-size:0.83rem;font-family:inherit;outline:none;transition:all 0.18s;}
 .search-box input:focus{border-color:var(--border2);background:var(--surfaceSolid);}
@@ -127,7 +127,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 /* ── KPI GRID ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:13px;margin-bottom:22px;}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 18px;backdrop-filter:var(--glass);position:relative;overflow:hidden;cursor:pointer;transition:all 0.2s;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px 18px;-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);position:relative;overflow:hidden;cursor:pointer;transition:all 0.2s;}
 .kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent,var(--blue)),transparent);opacity:0.6;}
 .kpi:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:var(--shadow);}
 .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;}
@@ -146,7 +146,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .c-pink{--accent:var(--pink);--icbg:rgba(244,114,182,0.12);}
 
 /* ── CARD ── */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);backdrop-filter:var(--glass);overflow:hidden;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);overflow:hidden;}
 .card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .card-title{font-size:0.86rem;font-weight:700;color:#fff;}
 .card-sub{font-size:0.7rem;color:var(--muted);margin-top:2px;}
@@ -253,7 +253,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 .ce-captacao{background:rgba(244,114,182,0.18);color:var(--pink);}
 
 /* ── MODAL ── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow-y:auto;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.65);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow-y:auto;}
 .modal-bg.open{display:flex;animation:mfade 0.2s ease;}
 @keyframes mfade{from{opacity:0;}to{opacity:1;}}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);width:520px;max-width:100%;position:relative;box-shadow:0 24px 80px rgba(0,0,0,0.6);animation:mpop 0.25s cubic-bezier(0.2,0.9,0.3,1.2);}
@@ -293,7 +293,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 .info-row .val{color:var(--text);font-weight:600;text-align:right;}
 
 /* ── TRAFFIC LIGHT (executivo) ── */
-.exec-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;backdrop-filter:var(--glass);position:relative;border-left:3px solid var(--tl,var(--blue));}
+.exec-kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;-webkit-backdrop-filter:var(--glass);backdrop-filter:var(--glass);position:relative;border-left:3px solid var(--tl,var(--blue));}
 .exec-kpi.tl-green{--tl:var(--green);}
 .exec-kpi.tl-yellow{--tl:var(--yellow);}
 .exec-kpi.tl-red{--tl:var(--red);}
@@ -334,21 +334,47 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 
 /* ── MOBILE ── */
 .mobile-menu{display:none;}
+/* seletor de etapa (mover por toque) */
+.stage-opt{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surfaceSolid);color:var(--text);font-size:0.86rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.14s;text-align:left;}
+.stage-opt:hover{border-color:var(--border2);background:rgba(78,168,255,0.08);}
+.stage-opt.cur{border-color:var(--border3);background:rgba(78,168,255,0.1);}
+.kc-move:hover{color:var(--blue-lit)!important;border-color:var(--border2)!important;background:rgba(78,168,255,0.14)!important;}
+/* backdrop do menu mobile */
+.sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:45;backdrop-filter:blur(2px);}
+.sb-backdrop.show{display:block;}
 @media(max-width:1000px){
   .grid-2,.grid-3,.grid-2-1{grid-template-columns:1fr;}
 }
 @media(max-width:760px){
-  .sidebar{transform:translateX(-100%);transition:transform 0.3s;width:230px;}
+  .sidebar{transform:translateX(-100%);transition:transform 0.3s;width:248px;padding-top:max(20px,env(safe-area-inset-top));}
   .sidebar.open{transform:translateX(0);}
   .main{margin-left:0;}
   .mobile-menu{display:flex;}
-  .content{padding:18px 16px 60px;}
-  .topbar{padding:12px 16px;}
+  .content{padding:18px 16px calc(60px + env(safe-area-inset-bottom));}
+  .topbar{padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));}
   .search-box{max-width:none;}
+  .search-box input{font-size:16px;}
   .search-kbd{display:none;}
-  .kpi-grid{grid-template-columns:repeat(2,1fr);}
-  .panel{right:12px;left:12px;width:auto;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kpi-val{font-size:1.35rem;}
+  .panel{right:8px;left:8px;width:auto;top:58px;}
   .page-head h1{font-size:1.25rem;}
+  .page-head{align-items:stretch;}
+  /* evita zoom automático do iOS ao focar campos (precisa >=16px) */
+  .field input,.field select,.field textarea,.add-row input,.row-date,.edit-cell{font-size:16px;}
+  /* tabelas largas: rolam horizontalmente com inércia */
+  .tbl-wrap{-webkit-overflow-scrolling:touch;}
+  .kanban{-webkit-overflow-scrolling:touch;}
+  .kcol{flex-basis:240px;}
+  .kcard-acts{opacity:1;}
+  .modal-bg{padding:3vh 10px;align-items:flex-start;}
+  .modal,.modal.lg{width:100%;}
+  .splash-content,.sp-c{padding:0 16px;}
+  .top-avatar{display:none;}
+}
+/* telas muito estreitas (iPhone mini/SE) */
+@media(max-width:380px){
+  .kpi-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -371,6 +397,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 <div class="amb"><div class="amb-ray ar1"></div><div class="amb-ray ar2"></div><div class="amb-orb ao1"></div><div class="amb-orb ao2"></div></div>
 <div class="layout">
 
+<div class="sb-backdrop" id="sb-backdrop" onclick="toggleSidebar()"></div>
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="logo">
@@ -826,7 +853,7 @@ function renderPipeline(){
       <div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropPipe(event,'${et}')">
         ${items.map(p=>`<div class="kcard" draggable="true" data-id="${p.id}" ondragstart="dragStart(event,'${p.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-top"><div class="kcard-title">${p.nome}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();editarLead('${p.id}')" title="Editar">✎</button><button class="kc-btn" onclick="event.stopPropagation();delLead('${p.id}')" title="Excluir">✕</button></div></div>
+          <div class="kcard-top"><div class="kcard-title">${p.nome}</div><div class="kcard-acts"><button class="kc-btn kc-move" onclick="event.stopPropagation();pickStage('pipe','${p.id}')" title="Mover">↔</button><button class="kc-btn" onclick="event.stopPropagation();editarLead('${p.id}')" title="Editar">✎</button><button class="kc-btn" onclick="event.stopPropagation();delLead('${p.id}')" title="Excluir">✕</button></div></div>
           <div style="font-size:0.7rem;color:var(--muted)">${p.empresa||''}</div>
           <div class="kcard-meta"><span class="kcard-val">${brl(p.valor)}</span></div>
         </div>`).join('')}
@@ -834,9 +861,9 @@ function renderPipeline(){
       </div></div>`;
   }).join('');
 }
-function dropPipe(e,etapa){
-  e.preventDefault();dragLeave(e);
-  const id=e.dataTransfer.getData('id');const p=pipeline.find(x=>x.id===id);if(!p)return;
+function dropPipe(e,etapa){e.preventDefault();dragLeave(e);movePipe(e.dataTransfer.getData('id'),etapa);}
+function movePipe(id,etapa){
+  const p=pipeline.find(x=>x.id===id);if(!p)return;
   const old=p.etapa;p.etapa=etapa;
   if(etapa==='Fechado'&&old!=='Fechado'){
     const novo={id:uid(),nome:p.nome,empresa:p.empresa,servico:'A definir',plano:'Pro',valorMensal:p.valor,status:'Ativo',dataInicio:new Date().toISOString().slice(0,10),proximoPag:new Date(Date.now()+2592e6).toISOString().slice(0,10),responsavel:'A definir',drive:'',redes:'',briefing:'',obs:'Criado via pipeline',horas:0,custoHora:50,videosContratados:0,videosEntregues:0};
@@ -1000,7 +1027,7 @@ function renderProducao(){
       <div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropProd(event,'${et}')">
         ${items.map(p=>`<div class="kcard" draggable="true" data-id="${p.id}" ondragstart="dragStart(event,'${p.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-top"><div class="kcard-title">${p.cliente}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();delProjeto('${p.id}')" title="Excluir">✕</button></div></div>
+          <div class="kcard-top"><div class="kcard-title">${p.cliente}</div><div class="kcard-acts"><button class="kc-btn kc-move" onclick="event.stopPropagation();pickStage('prod','${p.id}')" title="Mover">↔</button><button class="kc-btn" onclick="event.stopPropagation();delProjeto('${p.id}')" title="Excluir">✕</button></div></div>
           <div class="kcard-meta"><span class="badge ${prioBadge[p.prioridade]}">${p.prioridade}</span><span>▶ ${p.qtd} vídeos</span></div>
           <div class="kcard-meta"><span>👤 ${p.editor}</span>${p.prazo?`<span>⏱ ${fmtData(p.prazo)}</span>`:''}</div>
         </div>`).join('')}
@@ -1008,7 +1035,8 @@ function renderProducao(){
       </div></div>`;
   }).join('');
 }
-function dropProd(e,etapa){e.preventDefault();dragLeave(e);const id=e.dataTransfer.getData('id');const p=producao.find(x=>x.id===id);if(!p)return;p.etapa=etapa;
+function dropProd(e,etapa){e.preventDefault();dragLeave(e);moveProd(e.dataTransfer.getData('id'),etapa);}
+function moveProd(id,etapa){const p=producao.find(x=>x.id===id);if(!p)return;p.etapa=etapa;
   if(etapa==='Entregue'){const c=clientes.find(x=>x.nome===p.cliente);if(c){c.videosEntregues=(c.videosEntregues||0)+Number(p.qtd||0);}logAtiv(`Projeto <b>${p.cliente}</b> entregue (${p.qtd} vídeos)`,'✓','var(--green)');addNotif(`✓ ${p.cliente}: ${p.qtd} vídeos entregues`,'✓','var(--green)');mostrarToast(`✓ ${p.qtd} vídeos creditados a ${p.cliente}`);}
   else logAtiv(`Produção <b>${p.cliente}</b> → ${etapa}`,'→','var(--blue-lit)');
   refresh();}
@@ -1032,13 +1060,26 @@ function renderTarefas(){
     return`<div class="kcol"><div class="kcol-head"><span class="kcol-dot" style="background:${cor}"></span>${et}<span class="kcol-count">${items.length}</span></div>
       <div class="kcol-body" data-etapa="${et}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropTarefa(event,'${et}')">
         ${items.map(t=>`<div class="kcard" draggable="true" data-id="${t.id}" ondragstart="dragStart(event,'${t.id}')" ondragend="dragEnd(event)">
-          <div class="kcard-top"><div class="kcard-title">${t.titulo}</div><div class="kcard-acts"><button class="kc-btn" onclick="event.stopPropagation();delTarefa('${t.id}')" title="Excluir">✕</button></div></div><div class="kcard-meta"><span class="badge ${prioBadge[t.prioridade]}">${t.prioridade}</span>${t.responsavel?`<span>👤 ${t.responsavel}</span>`:''}</div>
+          <div class="kcard-top"><div class="kcard-title">${t.titulo}</div><div class="kcard-acts"><button class="kc-btn kc-move" onclick="event.stopPropagation();pickStage('tarefa','${t.id}')" title="Mover">↔</button><button class="kc-btn" onclick="event.stopPropagation();delTarefa('${t.id}')" title="Excluir">✕</button></div></div><div class="kcard-meta"><span class="badge ${prioBadge[t.prioridade]}">${t.prioridade}</span>${t.responsavel?`<span>👤 ${t.responsavel}</span>`:''}</div>
         </div>`).join('')}
       </div></div>`;
   }).join('');
 }
 function toggleTarefa(id){const t=tarefas.find(x=>x.id===id);t.done=!t.done;t.status=t.done?'Concluído':'A fazer';if(t.done)logAtiv(`Tarefa concluída: <b>${t.titulo}</b>`,'✓','var(--green)');save();renderTarefas();}
-function dropTarefa(e,etapa){e.preventDefault();dragLeave(e);const id=e.dataTransfer.getData('id');const t=tarefas.find(x=>x.id===id);if(!t)return;if(etapa==='Concluído'){t.done=true;t.status='Concluído';}else{t.done=false;t.status=etapa;}save();renderTarefas();}
+function dropTarefa(e,etapa){e.preventDefault();dragLeave(e);moveTarefa(e.dataTransfer.getData('id'),etapa);}
+function moveTarefa(id,etapa){const t=tarefas.find(x=>x.id===id);if(!t)return;if(etapa==='Concluído'){t.done=true;t.status='Concluído';}else{t.done=false;t.status=etapa;}save();renderTarefas();}
+// seletor de etapa (toque/celular — onde arrastar não funciona)
+function pickStage(tipo,id){
+  let etapas,atual,nome;
+  if(tipo==='pipe'){const p=pipeline.find(x=>x.id===id);etapas=PIPE_ETAPAS;atual=p.etapa;nome=p.nome;}
+  else if(tipo==='prod'){const p=producao.find(x=>x.id===id);etapas=PROD_ETAPAS;atual=p.etapa;nome=p.cliente;}
+  else{const t=tarefas.find(x=>x.id===id);etapas=TAREFA_ETAPAS;atual=t.done?'Concluído':t.status;nome=t.titulo;}
+  showModal(`<div class="modal"><div class="modal-head"><div><h2>Mover</h2><div class="mh-sub">${nome}</div></div><button class="modal-close" onclick="closeModalEl()">✕</button></div>
+    <div class="modal-body"><div style="display:flex;flex-direction:column;gap:8px">
+      ${etapas.map(([et,cor])=>`<button class="stage-opt ${et===atual?'cur':''}" onclick="doMove('${tipo}','${id}','${et.replace(/'/g,"\\'")}')"><span class="kcol-dot" style="background:${cor}"></span>${et}${et===atual?' <span style="margin-left:auto;font-size:0.7rem;color:var(--muted)">atual</span>':''}</button>`).join('')}
+    </div></div></div>`);
+}
+function doMove(tipo,id,etapa){closeModalEl();if(tipo==='pipe')movePipe(id,etapa);else if(tipo==='prod')moveProd(id,etapa);else moveTarefa(id,etapa);}
 function tarefaView(v,btn){document.querySelectorAll('#tarefas .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('tarefas-lista').style.display=v==='lista'?'block':'none';document.getElementById('tarefas-kanban').style.display=v==='kanban'?'flex':'none';}
 
 /* ══════════════ DRAG GENÉRICO ══════════════ */
@@ -1344,7 +1385,7 @@ function nav(id,btn){
   document.getElementById(id).classList.add('active');
   if(btn)btn.classList.add('active');else document.querySelector(`[data-sec="${id}"]`)?.classList.add('active');
   secAtual=id;if(renderMap[id])renderMap[id]();
-  if(window.innerWidth<=760)document.getElementById('sidebar').classList.remove('open');
+  if(window.innerWidth<=760){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-backdrop').classList.remove('show');}
 }
 function refresh(){save();recompute();if(renderMap[secAtual])renderMap[secAtual]();renderClientes();renderTarefas();try{scanVencimentos()}catch(e){}renderAtividades();renderNotif();}
 function renderAll(){recompute();Object.values(renderMap).forEach(fn=>{try{fn()}catch(e){}});try{scanVencimentos()}catch(e){}renderAtividades();renderNotif();}
@@ -1383,7 +1424,7 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){
 
 /* ══════════════ FULLSCREEN / SIDEBAR ══════════════ */
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});else document.exitFullscreen();}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+function toggleSidebar(){const open=document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-backdrop').classList.toggle('show',open);}
 
 /* ══════════════ TOAST / NOTIFY ══════════════ */
 let toastEl;
