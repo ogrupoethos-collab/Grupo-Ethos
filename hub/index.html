@@ -4,6 +4,14 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Grupo Ethos</title>
+<meta name="theme-color" content="#2979ff"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Ethos"/>
+<link rel="manifest" href="../manifest.json"/>
+<link rel="apple-touch-icon" href="../icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="../icon-192.png"/>
 <style>
 :root{
   --bg:#04080f;--bg2:#060d18;
@@ -288,7 +296,13 @@ td.neg{text-align:right;color:var(--red);font-weight:600;}
   <button class="nav-btn" onclick="go('tarefas',this)"><span class="ic">◻</span><span>Tarefas</span></button>
   <div class="sb-footer">
     <span class="sb-date" id="sb-date"></span>
-    <div class="sync-pill ok"><div class="sync-dot"></div><span>Salvo localmente</span></div>
+    <div class="sync-pill ok" style="margin-bottom:6px"><div class="sync-dot"></div><span>Salvo localmente</span></div>
+    <button id="btn-instalar" onclick="instalarApp()" style="display:none;align-items:center;gap:7px;width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border2);background:rgba(41,121,255,0.14);color:var(--blue-lit);font-size:0.72rem;font-weight:600;cursor:pointer;margin-bottom:5px;">
+      ⬇ Instalar como App
+    </button>
+    <button id="btn-notif" onclick="pedirNotificacoes()" style="display:flex;align-items:center;gap:7px;width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-size:0.72rem;cursor:pointer;">
+      🔔 Ativar notificações
+    </button>
   </div>
 </aside>
 
@@ -847,6 +861,71 @@ function go(id,btn){
 function entrar(){ document.getElementById('splash').classList.add('hide'); setTimeout(()=>{ document.getElementById('splash').style.display='none'; document.getElementById('app').style.opacity='1'; },900); }
 setTimeout(()=>{ if(document.getElementById('splash').style.display!=='none') entrar(); },6000);
 
+// ══ PWA ══
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('../sw.js').catch(()=>{});
+  });
+}
+
+// Instalar como app
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('btn-instalar').style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('btn-instalar').style.display = 'none';
+  mostrarToast('✓ App instalado! Procure o ícone Ethos na sua tela inicial.');
+});
+
+function instalarApp(){
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; }); }
+  else { mostrarToast('No celular: toque em ⋮ → "Adicionar à tela inicial"'); }
+}
+
+// Notificações
+async function pedirNotificacoes(){
+  if(!('Notification' in window)){ mostrarToast('Seu navegador não suporta notificações.'); return; }
+  const perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    mostrarToast('✓ Notificações ativadas!');
+    document.getElementById('btn-notif').style.display = 'none';
+    agendarNotificacoesDiarias();
+  } else {
+    mostrarToast('Permissão negada. Ative nas configurações do navegador.');
+  }
+}
+
+function agendarNotificacoesDiarias(){
+  // Notificação de lembrete de tarefas pendentes
+  const pendentes = tarefas.filter(t=>!t.done).length;
+  if(pendentes > 0 && Notification.permission === 'granted'){
+    setTimeout(()=>{
+      new Notification('Grupo Ethos', {
+        body: `Você tem ${pendentes} tarefa${pendentes>1?'s':''} pendente${pendentes>1?'s':''}!`,
+        icon: '../icon-192.png',
+        badge: '../icon-192.png',
+      });
+    }, 3000);
+  }
+}
+
+function notificarTarefa(txt){
+  if(Notification.permission === 'granted'){
+    new Notification('Nova tarefa — Grupo Ethos', { body: txt, icon: '../icon-192.png' });
+  }
+}
+
+// Toast
+function mostrarToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(41,121,255,0.95);color:#fff;padding:11px 22px;border-radius:24px;font-size:0.82rem;font-weight:500;z-index:9999;pointer-events:none;transition:opacity 0.4s;backdrop-filter:blur(10px);max-width:90vw;text-align:center'; document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._to); t._to=setTimeout(()=>t.style.opacity='0', 3200);
+}
+
 // ══ INIT ══
 const hoje=new Date();
 document.getElementById('sb-date').textContent=hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
@@ -854,6 +933,7 @@ document.getElementById('chip-data').textContent=hoje.toLocaleDateString('pt-BR'
 
 function renderAll(){ renderDash(); renderFin(); renderAgenda(); renderQuadro(); renderLista(); renderClientes(); renderTarefas(); renderCalendario(); }
 renderAll();
+setTimeout(agendarNotificacoesDiarias, 2000);
 </script>
 </body>
 </html>
