@@ -376,6 +376,62 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 @media(max-width:380px){
   .kpi-grid{grid-template-columns:1fr;}
 }
+/* ═══ ETHOS AI ═══ */
+.ai-fab{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));right:24px;width:62px;height:62px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;font-size:1.5rem;cursor:pointer;z-index:90;box-shadow:0 8px 30px rgba(41,121,255,0.5);display:flex;align-items:center;justify-content:center;transition:transform 0.2s;}
+.ai-fab:hover{transform:scale(1.07);}
+.ai-fab:active{transform:scale(0.95);}
+.ai-fab-ic{position:relative;z-index:2;}
+.ai-fab-pulse{position:absolute;inset:0;border-radius:50%;background:var(--blue);opacity:0.5;animation:aipulse 2.4s ease-out infinite;}
+@keyframes aipulse{0%{transform:scale(1);opacity:0.5;}100%{transform:scale(1.8);opacity:0;}}
+.ai-fab.rec{background:linear-gradient(135deg,#ff5b6b,#c0392b);}
+.ai-fab.rec .ai-fab-pulse{background:#ff5b6b;animation-duration:1s;}
+.ai-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,0.6);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:250;display:none;align-items:flex-end;justify-content:center;}
+.ai-sheet-bg.open{display:flex;animation:mfade 0.25s ease;}
+.ai-sheet{background:var(--bg2);border:1px solid var(--border2);border-radius:22px 22px 0 0;width:560px;max-width:100%;max-height:88vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -16px 60px rgba(0,0,0,0.5);animation:aisheet 0.32s cubic-bezier(0.2,0.9,0.3,1.1);}
+@media(min-width:761px){.ai-sheet{border-radius:22px;margin-bottom:24px;}.ai-sheet-bg.open{align-items:center;}}
+@keyframes aisheet{from{transform:translateY(40px);opacity:0.6;}to{transform:translateY(0);opacity:1;}}
+.ai-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:2;}
+.ai-sheet-title{display:flex;align-items:center;gap:10px;font-size:1rem;font-weight:800;color:#fff;}
+.ai-orb{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#7fc0ff,var(--blue));box-shadow:0 0 14px var(--blue);}
+.ai-orb.listening{animation:aiorb 0.9s ease-in-out infinite;}
+@keyframes aiorb{0%,100%{box-shadow:0 0 10px var(--blue);}50%{box-shadow:0 0 22px var(--blue-lit);transform:scale(1.15);}}
+.ai-sheet-body{padding:22px;}
+.ai-status{text-align:center;font-size:0.85rem;color:var(--text2);font-weight:500;margin-bottom:14px;min-height:20px;}
+.ai-status.ouvindo{color:var(--blue-lit);}
+.ai-status.processando{color:var(--yellow);}
+.ai-status.erro{color:var(--red);}
+.ai-transcript{min-height:30px;text-align:center;font-size:1.05rem;color:#fff;font-weight:600;margin-bottom:14px;line-height:1.4;}
+.ai-response{background:rgba(41,121,255,0.1);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;font-size:0.88rem;color:var(--text);margin-bottom:16px;line-height:1.5;}
+.ai-response.pergunta{background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);}
+.ai-mic-wrap{display:flex;justify-content:center;margin:8px 0 18px;}
+.ai-mic{width:84px;height:84px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--blue),var(--blue-glow));color:#fff;font-size:2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(41,121,255,0.45);transition:all 0.2s;}
+.ai-mic:hover{transform:scale(1.05);}
+.ai-mic.rec{background:linear-gradient(135deg,#ff5b6b,#c0392b);box-shadow:0 8px 30px rgba(255,91,107,0.5);animation:aimicrec 1s ease-in-out infinite;}
+@keyframes aimicrec{0%,100%{box-shadow:0 8px 30px rgba(255,91,107,0.4);}50%{box-shadow:0 8px 44px rgba(255,91,107,0.7);}}
+.ai-type{display:flex;gap:8px;margin-bottom:16px;}
+.ai-type input{flex:1;padding:11px 14px;background:var(--surfaceSolid);border:1px solid var(--border2);border-radius:var(--rs);color:var(--text);font-size:16px;font-family:inherit;outline:none;}
+.ai-type input:focus{border-color:var(--blue);}
+.ai-chips{display:flex;flex-wrap:wrap;gap:7px;}
+.ai-chip{font-size:0.72rem;padding:6px 11px;border-radius:16px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.14s;}
+.ai-chip:hover{border-color:var(--border2);color:#fff;background:rgba(41,121,255,0.1);}
+/* histórico IA */
+.ai-hist{display:flex;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.ai-hist:last-child{border-bottom:none;}
+.ai-hist-ic{width:36px;height:36px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.95rem;background:rgba(41,121,255,0.12);}
+.ai-hist-body{flex:1;min-width:0;}
+.ai-hist-intent{font-size:0.7rem;font-weight:700;color:var(--blue-lit);text-transform:uppercase;letter-spacing:0.05em;}
+.ai-hist-quote{font-size:0.84rem;color:var(--text);font-style:italic;margin:3px 0;}
+.ai-hist-quote::before{content:'“';}.ai-hist-quote::after{content:'”';}
+.ai-hist-desc{font-size:0.78rem;color:var(--text2);margin-top:4px;}
+.ai-hist-meta{font-size:0.68rem;color:var(--muted);margin-top:6px;display:flex;gap:10px;align-items:center;}
+.ai-hist.undone{opacity:0.5;}
+.ai-hist.undone .ai-hist-desc{text-decoration:line-through;}
+.ai-sug{display:flex;gap:11px;padding:12px 20px;border-bottom:1px solid var(--border);font-size:0.82rem;color:var(--text2);align-items:flex-start;}
+.ai-sug:last-child{border-bottom:none;}
+.ai-sug-ic{flex-shrink:0;}
+.ai-ex{padding:11px 13px;border:1px solid var(--border);border-radius:var(--rs);font-size:0.8rem;color:var(--text2);cursor:pointer;transition:all 0.14s;}
+.ai-ex:hover{border-color:var(--border2);color:#fff;background:rgba(41,121,255,0.07);}
+@media(max-width:760px){.ai-fab{width:56px;height:56px;bottom:calc(18px + env(safe-area-inset-bottom));right:18px;}.ai-sheet{max-height:92vh;}}
 </style>
 </head>
 <body>
@@ -420,6 +476,10 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   <div class="nav-group-label">Finanças</div>
   <button class="nav-btn" data-sec="financeiro" onclick="nav('financeiro',this)"><span class="nav-ic">$</span><span>Financeiro</span></button>
   <button class="nav-btn" data-sec="cobrancas" onclick="nav('cobrancas',this)"><span class="nav-ic">◉</span><span>Cobranças</span><span class="nav-badge" id="badge-cobrancas" style="background:rgba(255,107,107,0.2);color:var(--red)">0</span></button>
+
+  <div class="nav-group-label">Ethos AI</div>
+  <button class="nav-btn" data-sec="aiPainel" onclick="nav('aiPainel',this)"><span class="nav-ic">✦</span><span>Painel IA</span></button>
+  <button class="nav-btn" data-sec="aiHistorico" onclick="nav('aiHistorico',this)"><span class="nav-ic">◷</span><span>Histórico IA</span></button>
 
   <div class="sb-footer">
     <button class="sb-pill ok"><div class="sb-dot"></div><span>Salvo localmente</span></button>
@@ -591,9 +651,61 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   </div>
 </div>
 
+<!-- ═══ PAINEL IA ═══ -->
+<div class="section" id="aiPainel">
+  <div class="page-head"><div><h1>Ethos <span>AI</span></h1><div class="sub">Sua secretária operacional — fale e a IA executa</div></div>
+    <button class="btn btn-primary" onclick="aiOpen()"><span>🎤</span> Falar com a IA</button>
+  </div>
+  <div class="kpi-grid" id="ai-kpis"></div>
+  <div class="grid-2-1">
+    <div class="card"><div class="card-head"><div class="card-title">Últimas ações da IA</div><div class="card-sub" id="ai-painel-sub"></div></div><div id="ai-painel-acoes"></div></div>
+    <div class="card"><div class="card-head"><div class="card-title">Sugestões de otimização</div></div><div id="ai-sugestoes" style="padding:8px 0"></div></div>
+  </div>
+  <div class="card"><div class="card-head"><div class="card-title">O que você pode dizer</div></div>
+    <div style="padding:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px" id="ai-exemplos"></div>
+  </div>
+</div>
+
+<!-- ═══ HISTÓRICO IA ═══ -->
+<div class="section" id="aiHistorico">
+  <div class="page-head"><div><h1>Histórico da <span>IA</span></h1><div class="sub">Timeline de tudo que a IA executou — com opção de desfazer</div></div>
+    <button class="btn btn-sm" onclick="aiLimparHistorico()">Limpar histórico</button>
+  </div>
+  <div class="card"><div id="ai-historico-list"></div></div>
+</div>
+
 </div><!-- content -->
 </div><!-- main -->
 </div><!-- layout -->
+
+<!-- ═══ ETHOS AI — BOTÃO FLUTUANTE + ASSISTENTE ═══ -->
+<button class="ai-fab" id="ai-fab" onclick="aiOpen()" title="Ethos AI (assistente de voz)">
+  <span class="ai-fab-ic">🎤</span>
+  <span class="ai-fab-pulse"></span>
+</button>
+
+<div class="ai-sheet-bg" id="ai-sheet-bg" onclick="if(event.target===this)aiClose()">
+  <div class="ai-sheet">
+    <div class="ai-sheet-head">
+      <div class="ai-sheet-title"><span class="ai-orb" id="ai-orb"></span> Ethos AI Assistant</div>
+      <button class="modal-close" onclick="aiClose()">✕</button>
+    </div>
+    <div class="ai-sheet-body">
+      <div class="ai-status" id="ai-status">Toque no microfone e fale um comando</div>
+      <div class="ai-transcript" id="ai-transcript"></div>
+      <div class="ai-response" id="ai-response" style="display:none"></div>
+      <div class="ai-mic-wrap">
+        <button class="ai-mic" id="ai-mic" onclick="aiOuvir()"><span id="ai-mic-ic">🎤</span></button>
+      </div>
+      <div class="ai-type">
+        <input id="ai-input" placeholder="ou digite o comando aqui..." onkeydown="if(event.key==='Enter')aiEnviarTexto()"/>
+        <button class="btn btn-primary btn-sm" onclick="aiEnviarTexto()">Enviar</button>
+      </div>
+      <div class="ai-chips" id="ai-chips"></div>
+    </div>
+  </div>
+</div>
+
 </div><!-- app -->
 
 <!-- ═══ PANELS ═══ -->
@@ -691,8 +803,11 @@ let metas=LS.get('metas')||{mensal:15000,anual:180000};
 let atividades=LS.get('atividades')||[];
 let notificacoes=LS.get('notificacoes')||[];
 let pagamentos=LS.get('pagamentos')||[];
+let aiHistory=LS.get('aiHistory')||[];
+let aiErros=LS.get('aiErros')||0;
+let aiPending=null;
 
-function save(){['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos'].forEach(k=>LS.set(k,eval(k)));}
+function save(){['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros'].forEach(k=>LS.set(k,eval(k)));}
 
 /* ══════════════ AUTOMAÇÃO / CÁLCULOS ══════════════ */
 const K={};
@@ -1377,7 +1492,224 @@ function scanVencimentos(){
   document.getElementById('badge-cobrancas').textContent=K.atrasadoQtd+K.venceBreveQtd;
 }
 
-const renderMap={dash:renderDash,executivo:renderExec,pipeline:renderPipeline,clientes:renderClientes,rentabilidade:renderRent,producao:renderProducao,tarefas:renderTarefas,calendario:renderCalendario,financeiro:renderFin,cobrancas:renderCobrancas};
+/* ═══════════════════════════════════════════════════
+   ETHOS AI ASSISTANT — voz + interpretação local de intenção
+   ═══════════════════════════════════════════════════ */
+const aiNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+const hojeISO=()=>new Date().toISOString().slice(0,10);
+function addMesISO(n,base){const d=base?new Date(base+'T00:00:00'):new Date();d.setMonth(d.getMonth()+n);return d.toISOString().slice(0,10);}
+const AI_EXEMPLOS=[
+  'Cliente Amendoeira renovou o contrato por mais 3 meses no valor de R$ 2.500',
+  'Fechamos um novo cliente chamado Clínica Alpha por R$ 3.000 mensais',
+  'Marque uma gravação da Amendoeira para sexta-feira às 14h',
+  'Vídeos da Ótica Kaiser foram entregues',
+  'Pagamento da Conecta recebido',
+];
+
+/* ── extração de entidades ── */
+function aiValor(t){
+  let m=aiNorm(t).match(/(\d+(?:[.,]\d+)?)\s*mil/);
+  if(m)return Math.round(parseFloat(m[1].replace('.','').replace(',','.'))*1000);
+  m=t.match(/r\$\s*([\d.]+(?:,\d+)?)/i); if(m)return parseNum(m[1]);
+  m=t.match(/\b(\d{1,3}(?:\.\d{3})+(?:,\d+)?)\b/); if(m)return parseNum(m[1]);
+  m=t.match(/\b(\d{3,7})\b/); if(m)return parseInt(m[1]);
+  return null;
+}
+function aiCliente(t){
+  const tn=aiNorm(t);
+  let c=clientes.find(x=>tn.includes(aiNorm(x.nome)));
+  if(c)return c;
+  return clientes.find(x=>{const fw=aiNorm(x.nome).split(' ')[0];return fw.length>3&&tn.includes(fw);})||null;
+}
+const AI_DIAS={domingo:0,segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6};
+function aiData(t){
+  const tn=aiNorm(t),hoje=new Date();
+  if(tn.includes('depois de amanha')){const d=new Date(hoje);d.setDate(d.getDate()+2);return d.toISOString().slice(0,10);}
+  if(tn.includes('amanha')){const d=new Date(hoje);d.setDate(d.getDate()+1);return d.toISOString().slice(0,10);}
+  if(tn.includes('hoje'))return hoje.toISOString().slice(0,10);
+  for(const[k,wd]of Object.entries(AI_DIAS)){if(tn.includes(k)){const d=new Date(hoje);let diff=(wd-d.getDay()+7)%7;if(diff===0)diff=7;d.setDate(d.getDate()+diff);return d.toISOString().slice(0,10);}}
+  let m=tn.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if(m){const y=m[3]?(m[3].length===2?2000+ +m[3]:+m[3]):hoje.getFullYear();return new Date(y,+m[2]-1,+m[1]).toISOString().slice(0,10);}
+  return null;
+}
+function aiHora(t){const m=aiNorm(t).match(/(\d{1,2})\s*(?:h|:|horas)\s*(\d{2})?/);return m?String(m[1]).padStart(2,'0')+':'+(m[2]||'00'):'';}
+function aiMeses(t){const m=aiNorm(t).match(/(\d+)\s*(?:mes|meses)/);return m?parseInt(m[1]):null;}
+function aiLimparNome(t){return String(t).replace(/^(o |a |e |é |eh |chama-se |chamad[oa] |cliente |nome |empresa |é o |é a |por )+/i,'').replace(/\s+(por|no valor|de r\$).*$/i,'').replace(/[.?!,]/g,'').trim().replace(/\b\w/g,m=>m.toUpperCase());}
+function aiNomeNovo(t){
+  let m=t.match(/chamad[oa]\s+(.+?)(?:\s+por\b|\s+no valor|\s+r\$|\s+de\s+r\$|\s*[,.]|\s+\d|$)/i);
+  if(m)return aiLimparNome(m[1]);
+  m=t.match(/cliente\s+(?:novo\s+|nova\s+)?(.+?)(?:\s+por\b|\s+no valor|\s+r\$|\s*[,.]|\s+\d|$)/i);
+  if(m){const c=aiLimparNome(m[1]);if(c&&!/^(novo|nova|por|de|mais|um|uma)$/i.test(c))return c;}
+  return null;
+}
+
+/* ── snapshot p/ desfazer ── */
+function aiSnapshot(){return JSON.stringify({clientes,pipeline,producao,tarefas,eventos,pagamentos,receitasAvulsas,custos});}
+function aiRestore(snap){const s=JSON.parse(snap);clientes=s.clientes;pipeline=s.pipeline;producao=s.producao;tarefas=s.tarefas;eventos=s.eventos;pagamentos=s.pagamentos;receitasAvulsas=s.receitasAvulsas;custos=s.custos;save();recompute();renderAll();}
+function aiRegistrar(orig,intent,desc,ic,snap){
+  const reg={id:uid(),quem:'Equipe',texto:orig,intent,desc,ic:ic||'✦',data:Date.now(),snap,status:'ok'};
+  aiHistory.unshift(reg);aiHistory=aiHistory.slice(0,100);save();
+  try{renderAiHistorico();renderAiPainel();}catch(e){}
+  return{ok:true,msg:desc,reg};
+}
+
+/* ── interpretação ── */
+function aiInterpretar(texto){
+  const tn=aiNorm(texto);
+  if(/(renov|prorrog|estend|mais \d+\s*mes)/.test(tn))return aiIntentRenovar(texto);
+  if(/(fechamos|fechou|fechado|novo cliente|cliente novo|assinou|contratou|nova cliente)/.test(tn))return aiIntentNovo(texto);
+  if(/(marqu|agend|grava|reuniao|captac|marcar|reuniã)/.test(tn))return aiIntentEvento(texto);
+  if(/(entreg)/.test(tn))return aiIntentEntregue(texto);
+  if(/(pag(amento|ou|a|os)?|recebi|recebido|quitou|caiu o)/.test(tn))return aiIntentPagamento(texto);
+  aiErros++;save();try{renderAiPainel()}catch(e){}
+  return{ok:false,msg:'Não entendi o comando. Tente algo como: "Pagamento da Conecta recebido", "Novo cliente Clínica Alpha por R$ 3.000" ou "Marcar gravação da Amendoeira sexta às 14h".'};
+}
+function aiIntentRenovar(texto){
+  const c=aiCliente(texto);
+  if(!c){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Qual cliente renovou o contrato?'};}
+  const valor=aiValor(texto),meses=aiMeses(texto)||1;const snap=aiSnapshot();
+  if(valor)c.valorMensal=valor;
+  c.proximoPag=addMesISO(meses,c.proximoPag);
+  logAtiv(`IA: contrato de <b>${c.nome}</b> renovado`,'🎤','var(--green)');refresh();
+  return aiRegistrar(texto,'Renovação',`Contrato de ${c.nome} renovado${valor?' para '+brl(valor)+'/mês':''} · +${meses} mês(es). Faturamento mensal: ${brl(K.faturamento)}.`,'↻',snap);
+}
+function aiIntentNovo(texto){
+  const valor=aiValor(texto);let nome=aiNomeNovo(texto);
+  if(!nome){aiPending={tipo:'novoCliente',valor};return{ok:false,pergunta:'Qual o nome do cliente?'};}
+  if(valor==null){aiPending={tipo:'novoCliente',nome};return{ok:false,pergunta:`Qual o valor mensal do contrato de ${nome}?`};}
+  return aiExecNovo(nome,valor,texto);
+}
+function aiExecNovo(nome,valor,orig){
+  const snap=aiSnapshot();
+  clientes.push({id:uid(),nome,empresa:nome,servico:'A definir',plano:'Pro',valorMensal:valor,status:'Ativo',dataInicio:hojeISO(),proximoPag:addMesISO(1),responsavel:'A definir',drive:'',redes:'',briefing:'',obs:'Criado via Ethos AI',horas:0,custoHora:50,videosContratados:0,videosEntregues:0});
+  producao.push({id:uid(),cliente:nome,qtd:0,prazo:'',editor:'A definir',prioridade:'Média',etapa:'Briefing'});
+  tarefas.push({id:uid(),titulo:'Briefing inicial '+nome,cliente:nome,prioridade:'Alta',responsavel:'A definir',prazo:'',status:'A fazer',done:false});
+  logAtiv(`IA criou cliente <b>${nome}</b> (${brl(valor)}/mês)`,'🎤','var(--green)');
+  addNotif(`🎤 IA: novo cliente ${nome} (${brl(valor)}/mês)`,'$','var(--green)');refresh();
+  return aiRegistrar(orig,'Novo cliente',`Cliente ${nome} criado · projeto e tarefa inicial gerados · adicionado à carteira ativa. Faturamento mensal: ${brl(K.faturamento)}.`,'✓',snap);
+}
+function aiIntentEvento(texto){
+  const c=aiCliente(texto),data=aiData(texto),hora=aiHora(texto),tn=aiNorm(texto);
+  const tipo=/grava/.test(tn)?'gravacao':/capta/.test(tn)?'captacao':/reuni/.test(tn)?'reuniao':/entreg/.test(tn)?'entrega':'reuniao';
+  if(!data){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Para qual dia? (ex: sexta, amanhã, 25/06)'};}
+  const snap=aiSnapshot();const nomeCli=c?c.nome:'';
+  const tituloTipo={gravacao:'Gravação',captacao:'Captação',reuniao:'Reunião',entrega:'Entrega'}[tipo];
+  const titulo=tituloTipo+(nomeCli?' '+nomeCli:'');
+  eventos.push({id:uid(),titulo,cliente:nomeCli,data,hora,responsavel:'A definir',local:'—',tipo,status:'Confirmado'});
+  tarefas.push({id:uid(),titulo:'Preparar '+titulo,cliente:nomeCli,prioridade:'Média',responsavel:'A definir',prazo:data,status:'A fazer',done:false});
+  logAtiv(`IA agendou <b>${titulo}</b>`,'🎤','var(--purple)');refresh();
+  return aiRegistrar(texto,'Agendamento',`${titulo} agendada para ${fmtData(data)}${hora?' às '+hora:''} · tarefa vinculada criada${nomeCli?' e cliente '+nomeCli+' vinculado':''}.`,'◷',snap);
+}
+function aiIntentEntregue(texto){
+  const c=aiCliente(texto);
+  if(!c){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'De qual cliente os vídeos foram entregues?'};}
+  const snap=aiSnapshot();let cred=0,n=0;
+  producao.filter(p=>p.cliente===c.nome&&p.etapa!=='Entregue').forEach(p=>{p.etapa='Entregue';cred+=Number(p.qtd||0);n++;});
+  if(cred>0)c.videosEntregues=(c.videosEntregues||0)+cred;
+  logAtiv(`IA: projetos de <b>${c.nome}</b> entregues`,'🎤','var(--green)');refresh();
+  return aiRegistrar(texto,'Entrega',`${n||'Os'} projeto(s) de ${c.nome} marcados como entregues${cred?' · '+cred+' vídeos creditados':''}. Taxa de entrega: ${K.taxaEntrega}%.`,'✓',snap);
+}
+function aiIntentPagamento(texto){
+  const c=aiCliente(texto);
+  if(!c){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'De qual cliente foi o pagamento?'};}
+  if(pagoEsteMes(c))return{ok:true,msg:`${c.nome} já estava com o pagamento registrado este mês.`};
+  const snap=aiSnapshot();
+  pagamentos.push({id:uid(),clienteId:c.id,cliente:c.nome,valor:Number(c.valorMensal||0),data:hojeISO()});
+  c.proximoPag=addMesISO(1,c.proximoPag);
+  eventos.push({id:uid(),titulo:'Cobrança '+c.nome,cliente:c.nome,data:c.proximoPag,hora:'',responsavel:'Financeiro',local:'—',tipo:'pagamento',status:'Pendente'});
+  logAtiv(`IA: pagamento de <b>${c.nome}</b> recebido`,'🎤','var(--green)');refresh();
+  return aiRegistrar(texto,'Pagamento',`Pagamento de ${c.nome} (${brl(c.valorMensal)}) registrado · próximo ciclo agendado. Recebido no mês: ${brl(K.recebidoMes)} · lucro: ${brl(K.lucro)}.`,'$',snap);
+}
+function aiResolvePending(texto){
+  const p=aiPending;aiPending=null;
+  if(p.tipo==='novoCliente'){
+    let nome=p.nome,valor=p.valor;
+    if(!nome)nome=aiLimparNome(texto);
+    if(valor==null)valor=aiValor(texto);
+    if(!nome){aiPending={tipo:'novoCliente',valor};return{ok:false,pergunta:'Qual o nome do cliente?'};}
+    if(valor==null){aiPending={tipo:'novoCliente',nome};return{ok:false,pergunta:`Qual o valor mensal de ${nome}?`};}
+    return aiExecNovo(nome,valor,(p.orig||'')+' '+texto);
+  }
+  return aiInterpretar((p.texto||'')+' '+texto);
+}
+
+/* ── voz (Web Speech API) ── */
+let aiRecog=null,aiOuvindo=false;
+function aiOpen(){document.getElementById('ai-sheet-bg').classList.add('open');aiRenderChips();aiSetStatus('Toque no microfone e fale um comando','');document.getElementById('ai-transcript').textContent='';document.getElementById('ai-response').style.display='none';}
+function aiClose(){document.getElementById('ai-sheet-bg').classList.remove('open');if(aiRecog){try{aiRecog.stop()}catch(e){}}}
+function aiSetStatus(t,cls){const e=document.getElementById('ai-status');e.textContent=t;e.className='ai-status'+(cls?' '+cls:'');}
+function aiMicVisual(on){document.getElementById('ai-mic').classList.toggle('rec',on);document.getElementById('ai-mic-ic').textContent=on?'⏸':'🎤';document.getElementById('ai-orb').classList.toggle('listening',on);document.getElementById('ai-fab').classList.toggle('rec',on);}
+function aiOuvir(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){aiSetStatus('Seu navegador não suporta voz. Digite o comando abaixo.','erro');return;}
+  if(aiOuvindo){try{aiRecog.stop()}catch(e){}return;}
+  aiRecog=new SR();aiRecog.lang='pt-BR';aiRecog.interimResults=true;aiRecog.continuous=false;
+  let finalT='';
+  aiRecog.onstart=()=>{aiOuvindo=true;aiMicVisual(true);aiSetStatus('Ouvindo... fale agora','ouvindo');document.getElementById('ai-response').style.display='none';};
+  aiRecog.onresult=e=>{let interim='';finalT='';for(let i=0;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalT+=r[0].transcript;else interim+=r[0].transcript;}document.getElementById('ai-transcript').textContent=finalT||interim;};
+  aiRecog.onerror=e=>{aiOuvindo=false;aiMicVisual(false);aiSetStatus(e.error==='not-allowed'?'Permissão de microfone negada. Use o campo de texto abaixo.':'Não consegui ouvir. Tente novamente ou digite.','erro');};
+  aiRecog.onend=()=>{aiOuvindo=false;aiMicVisual(false);const txt=(finalT||document.getElementById('ai-transcript').textContent||'').trim();if(txt)aiProcessar(txt);else aiSetStatus('Não captei áudio. Toque no microfone e fale, ou digite.','');};
+  try{aiRecog.start()}catch(e){aiSetStatus('Erro ao iniciar microfone. Use o campo de texto.','erro');}
+}
+function aiEnviarTexto(){const inp=document.getElementById('ai-input');const t=inp.value.trim();if(!t)return;inp.value='';document.getElementById('ai-transcript').textContent=t;aiProcessar(t);}
+function aiProcessar(texto){
+  aiSetStatus('Processando...','processando');
+  setTimeout(()=>{
+    let res;try{res=aiPending?aiResolvePending(texto):aiInterpretar(texto);}catch(e){res={ok:false,msg:'Ocorreu um erro ao processar.'};}
+    const rEl=document.getElementById('ai-response');rEl.style.display='block';
+    if(res.pergunta){rEl.className='ai-response pergunta';rEl.textContent='❓ '+res.pergunta;aiSetStatus('Aguardando sua resposta...','');aiFalar(res.pergunta);}
+    else if(res.ok){rEl.className='ai-response';rEl.innerHTML='✓ '+res.msg;aiSetStatus('Concluído','');aiFalar(res.msg);mostrarToast('🎤 '+((res.reg&&res.reg.intent)||'IA executou a ação'));}
+    else{rEl.className='ai-response';rEl.textContent=res.msg;aiSetStatus('','');aiFalar(res.msg);}
+  },300);
+}
+function aiFalar(t){try{if('speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).replace(/<[^>]+>/g,''));u.lang='pt-BR';u.rate=1.05;speechSynthesis.speak(u);}}catch(e){}}
+function aiRenderChips(){document.getElementById('ai-chips').innerHTML=AI_EXEMPLOS.slice(0,3).map(ex=>`<button class="ai-chip" onclick="document.getElementById('ai-input').value=this.textContent;aiEnviarTexto()">${ex}</button>`).join('');}
+
+/* ── Painel IA ── */
+function renderAiPainel(){
+  const hoje=new Date().toDateString();
+  const hojeN=aiHistory.filter(h=>new Date(h.data).toDateString()===hoje).length;
+  const ativas=aiHistory.filter(h=>h.status==='ok').length;
+  const minutos=ativas*3;const tempo=minutos>=60?Math.floor(minutos/60)+'h '+(minutos%60)+'min':minutos+' min';
+  document.getElementById('ai-kpis').innerHTML=`
+    <div class="kpi c-blue"><div class="kpi-top"><span class="kpi-label">Ações por voz</span><span class="kpi-ic">✦</span></div><div class="kpi-val">${aiHistory.length}</div><div class="kpi-sub">no total</div></div>
+    <div class="kpi c-green"><div class="kpi-top"><span class="kpi-label">Tempo economizado</span><span class="kpi-ic">◷</span></div><div class="kpi-val">${tempo}</div><div class="kpi-sub">~3 min por ação</div></div>
+    <div class="kpi c-purple"><div class="kpi-top"><span class="kpi-label">Automações</span><span class="kpi-ic">⊞</span></div><div class="kpi-val">${ativas}</div><div class="kpi-sub">executadas pela IA</div></div>
+    <div class="kpi c-yellow"><div class="kpi-top"><span class="kpi-label">Atualizações hoje</span><span class="kpi-ic">↻</span></div><div class="kpi-val">${hojeN}</div><div class="kpi-sub">via comando de voz</div></div>
+    <div class="kpi c-red"><div class="kpi-top"><span class="kpi-label">Não compreendidos</span><span class="kpi-ic">⚠</span></div><div class="kpi-val">${aiErros}</div><div class="kpi-sub">comandos sem ação</div></div>`;
+  document.getElementById('ai-painel-sub').textContent=`${aiHistory.length} ações registradas`;
+  document.getElementById('ai-painel-acoes').innerHTML=aiHistory.slice(0,6).map(h=>`
+    <div class="ai-hist ${h.status==='desfeito'?'undone':''}"><div class="ai-hist-ic">${h.ic}</div><div class="ai-hist-body">
+      <div class="ai-hist-intent">${h.intent}</div><div class="ai-hist-desc">${h.desc}</div>
+      <div class="ai-hist-meta"><span>${aiTimeAgo(h.data)}</span></div></div></div>`).join('')||'<div class="empty"><div class="empty-ic">✦</div>Nenhuma ação ainda. Toque no microfone e fale!</div>';
+  // sugestões dinâmicas
+  const sug=[];
+  if(K.atrasadoQtd>0)sug.push(['⚠',`Há ${K.atrasadoQtd} cobrança(s) atrasada(s). Diga: "Pagamento da [cliente] recebido" ao receber.`]);
+  if(K.videosPendentes>20)sug.push(['▶',`${K.videosPendentes} vídeos pendentes. Ao entregar, diga: "Vídeos da [cliente] entregues".`]);
+  if(pipeline.filter(p=>p.etapa==='Negociação').length>0)sug.push(['◆',`${pipeline.filter(p=>p.etapa==='Negociação').length} lead(s) em negociação. Ao fechar, diga: "Fechamos o cliente [nome] por R$ X".`]);
+  if(K.metaMensalPct<100)sug.push(['◔',`Faltam ${brl(Math.max(0,metas.mensal-K.faturamento))} para a meta mensal. Registre novos contratos por voz.`]);
+  sug.push(['✦','Você pode atualizar contratos, pagamentos, entregas e agendamentos só falando — sem abrir formulários.']);
+  document.getElementById('ai-sugestoes').innerHTML=sug.map(([ic,t])=>`<div class="ai-sug"><span class="ai-sug-ic">${ic}</span><span>${t}</span></div>`).join('');
+  document.getElementById('ai-exemplos').innerHTML=AI_EXEMPLOS.map(ex=>`<div class="ai-ex" onclick="aiOpen();setTimeout(()=>{document.getElementById('ai-input').value='${ex.replace(/'/g,"\\'")}';},150)">“${ex}”</div>`).join('');
+}
+/* ── Histórico IA ── */
+function renderAiHistorico(){
+  document.getElementById('ai-historico-list').innerHTML=aiHistory.length?aiHistory.map(h=>`
+    <div class="ai-hist ${h.status==='desfeito'?'undone':''}">
+      <div class="ai-hist-ic">${h.ic}</div>
+      <div class="ai-hist-body">
+        <div class="ai-hist-intent">${h.intent} · ${h.quem}</div>
+        <div class="ai-hist-quote">${h.texto}</div>
+        <div class="ai-hist-desc">${h.desc}</div>
+        <div class="ai-hist-meta"><span>${new Date(h.data).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+          ${h.status==='ok'?`<button class="del-btn" style="width:auto;padding:2px 9px;font-size:0.68rem" onclick="aiDesfazer('${h.id}')" title="Desfazer">↩ Desfazer</button>`:'<span style="color:var(--muted)">desfeita</span>'}</div>
+      </div></div>`).join(''):'<div class="empty"><div class="empty-ic">◷</div>Nenhuma ação da IA ainda</div>';
+}
+function aiDesfazer(id){const h=aiHistory.find(x=>x.id===id);if(!h||h.status!=='ok')return;if(!confirm('Desfazer esta ação? Os dados voltarão ao estado anterior.'))return;aiRestore(h.snap);h.status='desfeito';save();mostrarToast('↩ Ação desfeita');renderAiHistorico();renderAiPainel();}
+function aiLimparHistorico(){if(!confirm('Limpar todo o histórico da IA? (as ações já executadas permanecem nos dados)'))return;aiHistory=[];save();renderAiHistorico();renderAiPainel();}
+function aiTimeAgo(t){const s=(Date.now()-t)/1000;if(s<60)return'agora';if(s<3600)return Math.floor(s/60)+'min atrás';if(s<86400)return Math.floor(s/3600)+'h atrás';return Math.floor(s/86400)+'d atrás';}
+
+const renderMap={dash:renderDash,executivo:renderExec,pipeline:renderPipeline,clientes:renderClientes,rentabilidade:renderRent,producao:renderProducao,tarefas:renderTarefas,calendario:renderCalendario,financeiro:renderFin,cobrancas:renderCobrancas,aiPainel:renderAiPainel,aiHistorico:renderAiHistorico};
 let secAtual='dash';
 function nav(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
