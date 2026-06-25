@@ -1504,6 +1504,10 @@ const AI_EXEMPLOS=[
   'Marque uma gravação da Amendoeira para sexta-feira às 14h',
   'Vídeos da Ótica Kaiser foram entregues',
   'Pagamento da Conecta recebido',
+  'Lançar custo de R$ 400 com tráfego pago',
+  'Criar tarefa editar os reels do Doutor Fabiano',
+  'Mover Bella Moda para negociação',
+  'Adicionar lead Studio Fit por R$ 1.400',
 ];
 
 /* ── extração de entidades ── */
@@ -1553,16 +1557,87 @@ function aiRegistrar(orig,intent,desc,ic,snap){
   return{ok:true,msg:desc,reg};
 }
 
+/* ── pipeline helpers ── */
+function aiPipeLead(t){const tn=aiNorm(t);return pipeline.find(p=>tn.includes(aiNorm(p.nome)))||pipeline.find(p=>{const fw=aiNorm(p.nome).split(' ')[0];return fw.length>3&&tn.includes(fw);})||null;}
+function aiStageAlvo(t){const tn=aiNorm(t);
+  if(/perdido|perdemos|perdeu|perdido/.test(tn))return'Perdido';
+  if(/fechad|fechou|ganho|ganhamos|ganhou/.test(tn))return'Fechado';
+  if(/negocia/.test(tn))return'Negociação';
+  if(/proposta|orcament/.test(tn))return'Proposta Enviada';
+  if(/reuniao|reuniã|marcada|reuniao marcada/.test(tn))return'Reunião Marcada';
+  if(/contato feito|fiz contato|primeiro contato|contatad/.test(tn))return'Contato Feito';
+  if(/(volt|de volta).*lead|para lead/.test(tn))return'Lead';
+  return null;
+}
+
 /* ── interpretação ── */
 function aiInterpretar(texto){
   const tn=aiNorm(texto);
-  if(/(renov|prorrog|estend|mais \d+\s*mes)/.test(tn))return aiIntentRenovar(texto);
-  if(/(fechamos|fechou|fechado|novo cliente|cliente novo|assinou|contratou|nova cliente)/.test(tn))return aiIntentNovo(texto);
-  if(/(marqu|agend|grava|reuniao|captac|marcar|reuniã)/.test(tn))return aiIntentEvento(texto);
-  if(/(entreg)/.test(tn))return aiIntentEntregue(texto);
-  if(/(pag(amento|ou|a|os)?|recebi|recebido|quitou|caiu o)/.test(tn))return aiIntentPagamento(texto);
+  // novo LEAD no pipeline
+  if(/\blead\b/.test(tn)&&/(novo|nova|adicion|cria|registr|coloca|cadastr|entrou)/.test(tn)&&!/(mover|passar|avanc|para a etapa)/.test(tn))return aiIntentNovoLead(texto);
+  // mover lead pelo pipeline
+  if(/(mover|passar|avanc|mud[ae]r? de etapa|moveu|avancou)/.test(tn)||(aiStageAlvo(texto)&&aiPipeLead(texto)&&!/fechamos|novo cliente|cliente novo/.test(tn)))return aiIntentMoverLead(texto);
+  // renovação
+  if(/(renov|prorrog|estend|mais \d+\s*mes|continuou|seguiu por)/.test(tn))return aiIntentRenovar(texto);
+  // novo cliente / fechamento
+  if(/(fechamos|fechou|fechado|novo cliente|cliente novo|nova cliente|assinou|contratou|ganhamos o cliente|conquistamos)/.test(tn))return aiIntentNovo(texto);
+  // tarefa
+  if(/(tarefa|lembrar|lembre|anota|anote|preciso|to-?do|a fazer|nao esquecer|não esquecer)/.test(tn))return aiIntentTarefa(texto);
+  // evento / agenda
+  if(/(marqu|agend|grava|reuniao|captac|marcar|reuniã|compromisso|encontro|call|aprovacao|aprovaç)/.test(tn))return aiIntentEvento(texto);
+  // custo / despesa
+  if(/(custo|despesa|gasto|gastei|gastamos|paguei|pagamos|comprei|compramos|investi|lancar custo|conta de|boleto)/.test(tn))return aiIntentCusto(texto);
+  // entrega
+  if(/(entreg|finaliz|conclui|conclu[ií]mos|pront[oa]s? os? video)/.test(tn))return aiIntentEntregue(texto);
+  // pagamento recebido (entrada)
+  if(/(recebi|recebido|recebemos|pagou|quitou|caiu o pag|pagamento d|faturou|entrou o pag)/.test(tn))return aiIntentPagamento(texto);
   aiErros++;save();try{renderAiPainel()}catch(e){}
-  return{ok:false,msg:'Não entendi o comando. Tente algo como: "Pagamento da Conecta recebido", "Novo cliente Clínica Alpha por R$ 3.000" ou "Marcar gravação da Amendoeira sexta às 14h".'};
+  return{ok:false,msg:'Não entendi o comando. Você pode dizer coisas como: "Pagamento da Conecta recebido", "Novo cliente Clínica Alpha por R$ 3.000", "Lançar custo de R$ 400 com tráfego", "Criar tarefa editar reels do Fabiano", "Mover Bella Moda para negociação" ou "Marcar gravação da Amendoeira sexta às 14h".'};
+}
+function aiIntentNovoLead(texto){
+  let nome=aiNomeNovo(texto);
+  if(!nome){const m=texto.match(/lead\s+(?:chamad[oa]\s+)?(.+?)(?:\s+por\b|\s+r\$|\s*\d|[.,]|$)/i);if(m)nome=aiLimparNome(m[1]);}
+  if(!nome){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Qual o nome do lead?'};}
+  const valor=aiValor(texto),snap=aiSnapshot();
+  pipeline.push({id:uid(),nome,empresa:nome,etapa:'Lead',valor:valor||0,contato:''});
+  logAtiv(`IA: lead <b>${nome}</b> adicionado ao pipeline`,'🎤','var(--blue-lit)');refresh();
+  return aiRegistrar(texto,'Novo lead',`Lead ${nome} adicionado ao pipeline${valor?' · estimado '+brl(valor):''}.`,'+',snap);
+}
+function aiIntentMoverLead(texto){
+  const lead=aiPipeLead(texto);
+  if(!lead){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Qual lead do pipeline você quer mover?'};}
+  const alvo=aiStageAlvo(texto);
+  if(!alvo)return{ok:false,msg:`Para qual etapa mover ${lead.nome}? (contato, reunião, proposta, negociação, fechado ou perdido)`};
+  const snap=aiSnapshot();movePipe(lead.id,alvo);
+  return aiRegistrar(texto,alvo==='Fechado'?'Negócio fechado':'Pipeline',
+    alvo==='Fechado'?`Lead ${lead.nome} fechado — cliente, projeto e tarefas iniciais criados automaticamente. Faturamento: ${brl(K.faturamento)}.`:`Lead ${lead.nome} movido para "${alvo}".`,
+    alvo==='Fechado'?'✓':'⊞',snap);
+}
+function aiIntentTarefa(texto){
+  let titulo='';
+  let m=texto.match(/(?:criar |cria |nova |novo |adicionar |adiciona )?tarefa[:\s]+(.+)/i)
+        ||texto.match(/(?:lembr(?:ar|e)(?: de| que)?|anot[ae]r?|preciso(?: de)?|não esquecer de|nao esquecer de)[:\s]+(.+)/i);
+  titulo=(m?m[1]:texto).replace(/\s+(para|do|da|de)\s+(?:o |a )?[A-ZÀ-Ú][\wà-ú]*\s*$/,'').trim();
+  if(!titulo){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Qual o título da tarefa?'};}
+  const c=aiCliente(texto),tn=aiNorm(texto);
+  const prio=/(urgent|alta prioridade|prioridade alta|importante|asap)/.test(tn)?'Alta':/baixa prioridade|sem pressa|quando der/.test(tn)?'Baixa':'Média';
+  const snap=aiSnapshot();
+  tarefas.push({id:uid(),titulo:titulo.charAt(0).toUpperCase()+titulo.slice(1),cliente:c?c.nome:'',prioridade:prio,responsavel:'',prazo:aiData(texto)||'',status:'A fazer',done:false});
+  logAtiv(`IA criou tarefa: <b>${titulo}</b>`,'🎤','var(--blue-lit)');refresh();
+  return aiRegistrar(texto,'Tarefa',`Tarefa criada: "${titulo}"${c?' · vinculada a '+c.nome:''} · prioridade ${prio}.`,'◻',snap);
+}
+function aiIntentCusto(texto){
+  const valor=aiValor(texto);
+  if(valor==null){aiPending={tipo:'recombina',texto};return{ok:false,pergunta:'Qual o valor do custo?'};}
+  let m=texto.match(/(?:com|de|para|em|conta de|boleto d[eo])\s+([a-zà-ú][a-zà-ú ]+?)(?:\s+r\$|\s+\d|[.,]|$)/i);
+  let desc=(m&&m[1].trim())||'Despesa';
+  const tn=aiNorm(texto);
+  const tipo=/(aluguel|internet|assinatura|mensal|fixo|salario|salário|folha)/.test(tn)?'fixo':'variavel';
+  const cat=/(freel|roteir|edi[cç]|montag)/.test(tn)?'Freelancers':/(imposto|simples|das|tribut)/.test(tn)?'Impostos':/(trafego|tráfego|marketing|anuncio|anúncio|ads|impulsion)/.test(tn)?'Marketing':/(equip|camera|câmera|lente|microfone|tripe|trip[ée])/.test(tn)?'Equipamentos':/(software|adobe|nuvem|app|aplicativo|sistema|licen[cç]a)/.test(tn)?'Ferramentas':'Outro';
+  const snap=aiSnapshot();
+  custos.push({id:uid(),desc:desc.charAt(0).toUpperCase()+desc.slice(1),cat,tipo,valor});
+  logAtiv(`IA lançou custo: <b>${desc}</b> (${brl(valor)})`,'🎤','var(--red)');refresh();
+  return aiRegistrar(texto,'Custo',`Custo de ${brl(valor)} (${desc}) lançado como ${tipo==='fixo'?'fixo':'variável'} · categoria ${cat}. Lucro atualizado: ${brl(K.lucro)}.`,'▦',snap);
 }
 function aiIntentRenovar(texto){
   const c=aiCliente(texto);
@@ -1574,6 +1649,12 @@ function aiIntentRenovar(texto){
   return aiRegistrar(texto,'Renovação',`Contrato de ${c.nome} renovado${valor?' para '+brl(valor)+'/mês':''} · +${meses} mês(es). Faturamento mensal: ${brl(K.faturamento)}.`,'↻',snap);
 }
 function aiIntentNovo(texto){
+  // se mencionar um lead já existente no pipeline, fecha o lead (sem duplicar)
+  const lead=aiPipeLead(texto);
+  if(lead&&/(fechamos|fechou|fechado|ganhamos|conquistamos|assinou)/.test(aiNorm(texto))){
+    const snap=aiSnapshot();movePipe(lead.id,'Fechado');
+    return aiRegistrar(texto,'Negócio fechado',`Lead ${lead.nome} fechado — cliente, projeto e tarefas iniciais criados automaticamente. Faturamento: ${brl(K.faturamento)}.`,'✓',snap);
+  }
   const valor=aiValor(texto);let nome=aiNomeNovo(texto);
   if(!nome){aiPending={tipo:'novoCliente',valor};return{ok:false,pergunta:'Qual o nome do cliente?'};}
   if(valor==null){aiPending={tipo:'novoCliente',nome};return{ok:false,pergunta:`Qual o valor mensal do contrato de ${nome}?`};}
