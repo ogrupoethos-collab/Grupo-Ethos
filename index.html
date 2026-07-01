@@ -338,6 +338,11 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 .stage-opt{display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surfaceSolid);color:var(--text);font-size:0.86rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.14s;text-align:left;}
 .stage-opt:hover{border-color:var(--border2);background:rgba(78,168,255,0.08);}
 .stage-opt.cur{border-color:var(--border3);background:rgba(78,168,255,0.1);}
+.perfil-card{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--surfaceSolid);cursor:pointer;transition:all 0.16s;font-family:inherit;}
+.perfil-card:hover{border-color:var(--border3);background:rgba(78,168,255,0.1);transform:translateY(-2px);}
+.perfil-av{width:52px;height:52px;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem;}
+.perfil-nome{font-size:0.9rem;font-weight:700;color:#fff;}
+.perfil-tag{font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
 .kc-move:hover{color:var(--blue-lit)!important;border-color:var(--border2)!important;background:rgba(78,168,255,0.14)!important;}
 /* backdrop do menu mobile */
 .sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:45;backdrop-filter:blur(2px);}
@@ -810,7 +815,7 @@ let aiHistory=LS.get('aiHistory')||[];
 let aiErros=LS.get('aiErros')||0;
 let aiPending=null;
 // identidade (por dispositivo) e sincronização
-let socios=LS.get('socios')||null;          // ['Nome A','Nome B']
+let socios=LS.get('socios')||['CEO Vinícius','CEO Lucas'];
 let usuarioAtual=LS.get('usuarioAtual')||null;
 let syncCfg=LS.get('syncCfg')||null;
 let deviceId=LS.get('deviceId');if(!deviceId){deviceId='d'+Math.random().toString(36).slice(2,9);LS.set('deviceId',deviceId);}
@@ -1866,24 +1871,29 @@ async function pedirNotificacoes(){if(!('Notification'in window))return mostrarT
 function iniciais(n){return String(n||'?').split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 function renderUserChip(){const el=document.getElementById('top-user');if(el){el.textContent=iniciais(usuarioAtual||'GE');el.title=usuarioAtual?('Usuário: '+usuarioAtual+' (tocar para trocar)'):'Definir usuário';}}
 function pedirUsuario(primeira){
-  const a=(socios&&socios[0])||'',b=(socios&&socios[1])||'';
-  showModal(`<div class="modal"><div class="modal-head"><div><h2>Quem está usando?</h2><div class="mh-sub">Suas alterações ficam marcadas com seu nome</div></div>${primeira?'':'<button class="modal-close" onclick="closeModalEl()">✕</button>'}</div>
+  const a=(socios&&socios[0])||'CEO Vinícius',b=(socios&&socios[1])||'CEO Lucas';
+  showModal(`<div class="modal"><div class="modal-head"><div><h2>Qual perfil é você?</h2><div class="mh-sub">Suas alterações ficam marcadas com seu nome</div></div>${primeira?'':'<button class="modal-close" onclick="closeModalEl()">✕</button>'}</div>
     <div class="modal-body">
-      <div class="field-row"><div class="field"><label>Sócio 1</label><input id="u-s1" value="${a}" placeholder="Ex: Vinícius"/></div><div class="field"><label>Sócio 2</label><input id="u-s2" value="${b}" placeholder="Ex: nome do sócio"/></div></div>
-      <div class="field"><label>Eu sou</label>
-        <div style="display:flex;gap:10px" id="u-pick">
-          <button class="stage-opt" style="flex:1;justify-content:center" onclick="definirUsuario(1)">Sócio 1</button>
-          <button class="stage-opt" style="flex:1;justify-content:center" onclick="definirUsuario(2)">Sócio 2</button>
-        </div>
+      <div style="display:flex;gap:12px;margin-bottom:18px">
+        <button class="perfil-card" onclick="definirUsuario(1)">
+          <div class="perfil-av" style="background:${avColor(a)}">${iniciais(a)}</div>
+          <div class="perfil-nome">${a}</div><div class="perfil-tag">Perfil 1</div>
+        </button>
+        <button class="perfil-card" onclick="definirUsuario(2)">
+          <div class="perfil-av" style="background:${avColor(b)}">${iniciais(b)}</div>
+          <div class="perfil-nome">${b}</div><div class="perfil-tag">Perfil 2</div>
+        </button>
       </div>
+      <div class="field-row"><div class="field"><label>Nome do Perfil 1</label><input id="u-s1" value="${a}"/></div><div class="field"><label>Nome do Perfil 2</label><input id="u-s2" value="${b}"/></div></div>
+      <div style="font-size:0.74rem;color:var(--muted);text-align:center">Toque no seu perfil acima para entrar. Pode renomear nos campos antes.</div>
     </div></div>`);
 }
 function definirUsuario(qual){
-  const s1=(document.getElementById('u-s1').value.trim())||'Sócio 1';
-  const s2=(document.getElementById('u-s2').value.trim())||'Sócio 2';
+  const s1=(document.getElementById('u-s1').value.trim())||'CEO Vinícius';
+  const s2=(document.getElementById('u-s2').value.trim())||'CEO Lucas';
   socios=[s1,s2];usuarioAtual=qual===1?s1:s2;
   LS.set('socios',socios);LS.set('usuarioAtual',usuarioAtual);
-  closeModalEl();renderUserChip();mostrarToast('Olá, '+usuarioAtual+'! 👋');
+  closeModalEl();renderUserChip();mostrarToast('Bem-vindo, '+usuarioAtual+'! 👋');
 }
 function abrirTrocarUsuario(){pedirUsuario(false);}
 
