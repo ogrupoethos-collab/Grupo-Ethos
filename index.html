@@ -370,7 +370,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   .modal-bg{padding:3vh 10px;align-items:flex-start;}
   .modal,.modal.lg{width:100%;}
   .splash-content,.sp-c{padding:0 16px;}
-  .top-avatar{display:none;}
+  .top-avatar{display:flex;}
 }
 /* telas muito estreitas (iPhone mini/SE) */
 @media(max-width:380px){
@@ -482,8 +482,9 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
   <button class="nav-btn" data-sec="aiHistorico" onclick="nav('aiHistorico',this)"><span class="nav-ic">◷</span><span>Histórico IA</span></button>
 
   <div class="sb-footer">
-    <button class="sb-pill ok"><div class="sb-dot"></div><span>Salvo localmente</span></button>
+    <button class="sb-pill" id="sync-pill" onclick="abrirSync()"><div class="sb-dot"></div><span id="sync-txt">Sincronização</span></button>
     <button class="sb-pill" id="btn-instalar" onclick="instalarApp()" style="display:none"><span>⬇</span><span>Instalar como App</span></button>
+    <button class="sb-pill" onclick="baixarBackup()"><span>💾</span><span>Baixar backup</span></button>
     <button class="sb-pill" id="btn-notif" onclick="pedirNotificacoes()"><span>🔔</span><span>Ativar notificações</span></button>
   </div>
 </aside>
@@ -503,7 +504,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
     <button class="top-btn" onclick="toggleFullscreen()" title="Tela cheia">⛶</button>
     <button class="top-btn" onclick="togglePanel('atividades')" title="Atividades">◷</button>
     <button class="top-btn" onclick="togglePanel('notif')" title="Notificações">🔔<span class="top-badge" id="notif-count">0</span></button>
-    <div class="top-avatar" title="Grupo Ethos">GE</div>
+    <div class="top-avatar" id="top-user" title="Trocar usuário" onclick="abrirTrocarUsuario()">GE</div>
   </div>
 </div>
 
@@ -730,6 +731,8 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 <div id="modais"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <script>
 /* ══════════════ ESTADO ══════════════ */
 const LS={get:k=>{try{return JSON.parse(localStorage.getItem('ethos2_'+k))}catch(e){return null}},set:(k,v)=>localStorage.setItem('ethos2_'+k,JSON.stringify(v))};
@@ -806,8 +809,15 @@ let pagamentos=LS.get('pagamentos')||[];
 let aiHistory=LS.get('aiHistory')||[];
 let aiErros=LS.get('aiErros')||0;
 let aiPending=null;
+// identidade (por dispositivo) e sincronização
+let socios=LS.get('socios')||null;          // ['Nome A','Nome B']
+let usuarioAtual=LS.get('usuarioAtual')||null;
+let syncCfg=LS.get('syncCfg')||null;
+let deviceId=LS.get('deviceId');if(!deviceId){deviceId='d'+Math.random().toString(36).slice(2,9);LS.set('deviceId',deviceId);}
+const SYNC_KEYS=['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros'];
+let aplicandoRemoto=false;
 
-function save(){['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros'].forEach(k=>LS.set(k,eval(k)));}
+function save(){SYNC_KEYS.forEach(k=>LS.set(k,eval(k)));if(!aplicandoRemoto)syncPush();}
 
 /* ══════════════ AUTOMAÇÃO / CÁLCULOS ══════════════ */
 const K={};
@@ -859,7 +869,7 @@ const brl=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,
 const brl2=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2});
 const avColor=n=>{const c=['#2979ff','#a78bfa','#2ee6a0','#ff9f4a','#f472b6','#fbbf24'];let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return c[Math.abs(h)%c.length];};
 const ini=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-function logAtiv(txt,ic,cor){atividades.unshift({txt,ic,cor,t:Date.now()});atividades=atividades.slice(0,30);}
+function logAtiv(txt,ic,cor){atividades.unshift({txt,ic,cor,t:Date.now(),quem:usuarioAtual||''});atividades=atividades.slice(0,40);}
 function addNotif(txt,ic,cor){notificacoes.unshift({txt,ic,cor,t:Date.now(),lida:false});notificacoes=notificacoes.slice(0,20);updateNotifCount();}
 function updateNotifCount(){const n=notificacoes.filter(x=>!x.lida).length;const el=document.getElementById('notif-count');el.textContent=n;el.style.display=n?'flex':'none';}
 function timeAgo(t){const s=(Date.now()-t)/1000;if(s<60)return'agora';if(s<3600)return Math.floor(s/60)+'min';if(s<86400)return Math.floor(s/3600)+'h';return Math.floor(s/86400)+'d';}
@@ -1551,7 +1561,7 @@ function aiNomeNovo(t){
 function aiSnapshot(){return JSON.stringify({clientes,pipeline,producao,tarefas,eventos,pagamentos,receitasAvulsas,custos});}
 function aiRestore(snap){const s=JSON.parse(snap);clientes=s.clientes;pipeline=s.pipeline;producao=s.producao;tarefas=s.tarefas;eventos=s.eventos;pagamentos=s.pagamentos;receitasAvulsas=s.receitasAvulsas;custos=s.custos;save();recompute();renderAll();}
 function aiRegistrar(orig,intent,desc,ic,snap){
-  const reg={id:uid(),quem:'Equipe',texto:orig,intent,desc,ic:ic||'✦',data:Date.now(),snap,status:'ok'};
+  const reg={id:uid(),quem:usuarioAtual||'Grupo Ethos',texto:orig,intent,desc,ic:ic||'✦',data:Date.now(),snap,status:'ok'};
   aiHistory.unshift(reg);aiHistory=aiHistory.slice(0,100);save();
   try{renderAiHistorico();renderAiPainel();}catch(e){}
   return{ok:true,msg:desc,reg};
@@ -1805,7 +1815,7 @@ function renderAll(){recompute();Object.values(renderMap).forEach(fn=>{try{fn()}
 
 /* ══════════════ PANELS ══════════════ */
 function togglePanel(id){const p=document.getElementById('panel-'+id);const wasOpen=p.classList.contains('open');document.querySelectorAll('.panel').forEach(x=>x.classList.remove('open'));if(!wasOpen){p.classList.add('open');if(id==='notif'){notificacoes.forEach(n=>n.lida=true);save();updateNotifCount();}}}
-function renderAtividades(){document.getElementById('atividades-list').innerHTML=atividades.length?atividades.map(a=>`<div class="notif-item"><div class="notif-ic" style="background:rgba(41,121,255,0.12);color:${a.cor}">${a.ic}</div><div><div class="notif-txt">${a.txt}</div><div class="notif-time">${timeAgo(a.t)}</div></div></div>`).join(''):'<div class="empty">Nenhuma atividade ainda</div>';}
+function renderAtividades(){document.getElementById('atividades-list').innerHTML=atividades.length?atividades.map(a=>`<div class="notif-item"><div class="notif-ic" style="background:rgba(41,121,255,0.12);color:${a.cor}">${a.ic}</div><div><div class="notif-txt">${a.txt}</div><div class="notif-time">${a.quem?a.quem+' · ':''}${timeAgo(a.t)}</div></div></div>`).join(''):'<div class="empty">Nenhuma atividade ainda</div>';}
 function renderNotif(){updateNotifCount();document.getElementById('notif-list').innerHTML=notificacoes.length?notificacoes.map(n=>`<div class="notif-item"><div class="notif-ic" style="background:rgba(41,121,255,0.12);color:${n.cor}">${n.ic}</div><div><div class="notif-txt">${n.txt}</div><div class="notif-time">${timeAgo(n.t)}</div></div></div>`).join(''):'<div class="empty">Sem notificações</div>';}
 function limparNotif(){notificacoes=[];save();renderNotif();}
 
@@ -1852,8 +1862,100 @@ window.addEventListener('appinstalled',()=>{document.getElementById('btn-instala
 function instalarApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>deferredPrompt=null);}else mostrarToast('No celular: menu ⋮ → "Adicionar à tela inicial"');}
 async function pedirNotificacoes(){if(!('Notification'in window))return mostrarToast('Navegador sem suporte');const p=await Notification.requestPermission();if(p==='granted'){mostrarToast('✓ Notificações ativadas!');document.getElementById('btn-notif').style.display='none';const pend=tarefas.filter(t=>!t.done).length;if(pend)setTimeout(()=>notify('Grupo Ethos',`Você tem ${pend} tarefa(s) pendente(s)`),2500);}else mostrarToast('Permissão negada');}
 
+/* ══════════════ USUÁRIOS (identidade por dispositivo) ══════════════ */
+function iniciais(n){return String(n||'?').split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase();}
+function renderUserChip(){const el=document.getElementById('top-user');if(el){el.textContent=iniciais(usuarioAtual||'GE');el.title=usuarioAtual?('Usuário: '+usuarioAtual+' (tocar para trocar)'):'Definir usuário';}}
+function pedirUsuario(primeira){
+  const a=(socios&&socios[0])||'',b=(socios&&socios[1])||'';
+  showModal(`<div class="modal"><div class="modal-head"><div><h2>Quem está usando?</h2><div class="mh-sub">Suas alterações ficam marcadas com seu nome</div></div>${primeira?'':'<button class="modal-close" onclick="closeModalEl()">✕</button>'}</div>
+    <div class="modal-body">
+      <div class="field-row"><div class="field"><label>Sócio 1</label><input id="u-s1" value="${a}" placeholder="Ex: Vinícius"/></div><div class="field"><label>Sócio 2</label><input id="u-s2" value="${b}" placeholder="Ex: nome do sócio"/></div></div>
+      <div class="field"><label>Eu sou</label>
+        <div style="display:flex;gap:10px" id="u-pick">
+          <button class="stage-opt" style="flex:1;justify-content:center" onclick="definirUsuario(1)">Sócio 1</button>
+          <button class="stage-opt" style="flex:1;justify-content:center" onclick="definirUsuario(2)">Sócio 2</button>
+        </div>
+      </div>
+    </div></div>`);
+}
+function definirUsuario(qual){
+  const s1=(document.getElementById('u-s1').value.trim())||'Sócio 1';
+  const s2=(document.getElementById('u-s2').value.trim())||'Sócio 2';
+  socios=[s1,s2];usuarioAtual=qual===1?s1:s2;
+  LS.set('socios',socios);LS.set('usuarioAtual',usuarioAtual);
+  closeModalEl();renderUserChip();mostrarToast('Olá, '+usuarioAtual+'! 👋');
+}
+function abrirTrocarUsuario(){pedirUsuario(false);}
+
+/* ══════════════ SINCRONIZAÇÃO (Firebase Realtime DB) ══════════════ */
+let fbRef=null,syncOn=false,pushT=null;
+function syncStatus(state,txt){const p=document.getElementById('sync-pill');if(!p)return;p.classList.toggle('ok',state==='ok');const d=p.querySelector('.sb-dot');if(d)d.style.background=state==='ok'?'var(--green)':state==='err'?'var(--red)':'var(--muted)';document.getElementById('sync-txt').textContent=txt;}
+function syncStart(cfg){
+  try{
+    if(!window.firebase||!firebase.initializeApp){syncStatus('err','SDK indisponível');return false;}
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    fbRef=firebase.database().ref('ethosHub/state');
+    fbRef.on('value',snap=>{
+      const v=snap.val();if(!v||!v.data)return;
+      if(v.updatedBy===deviceId)return; // ignora eco do próprio dispositivo
+      aplicandoRemoto=true;
+      SYNC_KEYS.forEach(k=>{if(v.data[k]!==undefined){eval(k+'=v.data['+JSON.stringify(k)+']');LS.set(k,v.data[k]);}});
+      aplicandoRemoto=false;recompute();renderAll();renderUserChip();
+      syncStatus('ok','Sincronizado');
+      if(v.updatedName)mostrarToast('↻ Atualizado por '+v.updatedName);
+    },err=>{syncStatus('err','Erro de conexão');});
+    syncOn=true;syncCfg=cfg;LS.set('syncCfg',cfg);syncStatus('ok','Sincronizado');
+    syncPush(); // envia estado local inicial
+    return true;
+  }catch(e){syncStatus('err','Config inválida');return false;}
+}
+function syncPush(){
+  if(!syncOn||!fbRef)return;
+  clearTimeout(pushT);
+  pushT=setTimeout(()=>{try{
+    const data={};SYNC_KEYS.forEach(k=>data[k]=eval(k));
+    fbRef.set({data,updatedAt:Date.now(),updatedBy:deviceId,updatedName:usuarioAtual||'—'});
+  }catch(e){}},700);
+}
+function abrirSync(){
+  const conectado=syncOn;
+  showModal(`<div class="modal lg"><div class="modal-head"><div><h2>Sincronização entre dispositivos</h2><div class="mh-sub">${conectado?'✓ Conectado — vocês veem os mesmos dados em tempo real':'Conecte um banco Firebase grátis para você e seu sócio compartilharem o hub'}</div></div><button class="modal-close" onclick="closeModalEl()">✕</button></div>
+    <div class="modal-body">
+      ${conectado?'<div class="ai-response" style="margin-bottom:16px">✓ Sincronização ativa. Qualquer alteração aparece no aparelho do seu sócio automaticamente.</div>':''}
+      <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:16px">
+        <b style="color:#fff">Passo a passo (só uma vez, ~5 min):</b><br>
+        1. Acesse <span style="color:var(--blue-lit)">console.firebase.google.com</span> e faça login com o Google.<br>
+        2. Clique em <b>Adicionar projeto</b> → dê o nome "Grupo Ethos" → avançar até criar.<br>
+        3. No menu, abra <b>Realtime Database</b> → <b>Criar banco de dados</b> → escolha local → inicie em <b>modo de teste</b>.<br>
+        4. Volte em <b>Visão geral do projeto</b> → ícone <b>&lt;/&gt;</b> (Web) → registre o app → copie o bloco <b>firebaseConfig</b>.<br>
+        5. Cole o bloco aqui embaixo e toque em <b>Conectar</b>.
+      </div>
+      <div class="field"><label>Cole aqui o firebaseConfig</label><textarea id="sync-cfg" style="min-height:150px;font-family:var(--font-mono,monospace);font-size:13px" placeholder="const firebaseConfig = {\n  apiKey: '...',\n  authDomain: '...',\n  databaseURL: 'https://....firebasedatabase.app',\n  projectId: '...'\n};">${syncCfg?JSON.stringify(syncCfg,null,2):''}</textarea></div>
+      <div class="ai-response pergunta" style="font-size:0.78rem">💡 O mesmo firebaseConfig deve ser colado no aparelho do seu sócio também — aí os dois ficam conectados ao mesmo banco.</div>
+    </div>
+    <div class="modal-foot">${conectado?'<button class="btn" style="margin-right:auto;color:var(--red);border-color:rgba(255,107,107,0.3)" onclick="syncDesconectar()">Desconectar</button>':''}<button class="btn" onclick="closeModalEl()">Fechar</button><button class="btn btn-primary" onclick="conectarSync()">Conectar</button></div></div>`);
+}
+function conectarSync(){
+  const raw=document.getElementById('sync-cfg').value.trim();
+  if(!raw)return mostrarToast('Cole o firebaseConfig');
+  let cfg;
+  try{const m=raw.match(/\{[\s\S]*\}/);cfg=new Function('return ('+m[0]+')')();}catch(e){return mostrarToast('Config inválida — copie o bloco todo');}
+  if(!cfg.databaseURL)return mostrarToast('Faltou o databaseURL — ative o Realtime Database no Firebase');
+  if(syncStart(cfg)){closeModalEl();mostrarToast('✓ Sincronização conectada!');}
+  else mostrarToast('Não consegui conectar. Confira a config.');
+}
+function syncDesconectar(){if(fbRef){try{fbRef.off()}catch(e){}}fbRef=null;syncOn=false;syncCfg=null;LS.set('syncCfg',null);syncStatus('','Sincronização');closeModalEl();mostrarToast('Sincronização desconectada');}
+
+/* ══════════════ BACKUP / EXPORT ══════════════ */
+function baixarBackup(){
+  const dados={};[...SYNC_KEYS,'socios'].forEach(k=>{try{dados[k]=eval(k)}catch(e){}});
+  const blob=new Blob([JSON.stringify(dados,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='grupo-ethos-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  mostrarToast('💾 Backup baixado');
+}
+
 /* ══════════════ SPLASH ══════════════ */
-function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';},900);}
+function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';if(!usuarioAtual)pedirUsuario(true);},900);}
 setTimeout(()=>{if(document.getElementById('splash').style.display!=='none')entrar();},7000);
 
 /* ══════════════ INIT ══════════════ */
@@ -1869,6 +1971,9 @@ if(!LS.get('vencNorm')){
 }
 document.getElementById('dash-data').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 if('Notification'in window&&Notification.permission==='granted')document.getElementById('btn-notif').style.display='none';
+renderUserChip();
+// reconecta sincronização salva (após o SDK carregar)
+if(syncCfg){syncStatus('','Conectando...');window.addEventListener('load',()=>setTimeout(()=>syncStart(syncCfg),400));}
 window.addEventListener('load',()=>renderAll());
 renderAll();
 </script>
