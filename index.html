@@ -1860,7 +1860,11 @@ function mostrarToast(msg){if(!toastEl){toastEl=document.createElement('div');to
 function notify(title,body){if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body,icon:'./icon-192.png'});}
 
 /* ══════════════ PWA ══════════════ */
-if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker'in navigator){
+  let recarregou=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(recarregou)return;recarregou=true;location.reload();});
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').then(reg=>{reg.addEventListener('updatefound',()=>{const nw=reg.installing;nw&&nw.addEventListener('statechange',()=>{if(nw.state==='installed'&&navigator.serviceWorker.controller)mostrarToast('Atualizando para a versão mais recente...');});});}).catch(()=>{}));
+}
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('btn-instalar').style.display='flex';});
 window.addEventListener('appinstalled',()=>{document.getElementById('btn-instalar').style.display='none';mostrarToast('✓ App instalado!');});

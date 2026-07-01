@@ -1,7 +1,5 @@
-const CACHE = 'ethos-v2';
+const CACHE = 'ethos-v4';
 const ASSETS = [
-  '/Grupo-Ethos/',
-  '/Grupo-Ethos/index.html',
   '/Grupo-Ethos/manifest.json',
   '/Grupo-Ethos/icon-192.png',
   '/Grupo-Ethos/icon-512.png',
@@ -14,13 +12,35 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
+// Network-first para a página (HTML) — garante que atualizações apareçam sempre.
+// Cache-first para os demais assets (ícones, libs).
 self.addEventListener('fetch', e => {
+  const req = e.request;
+  const isHTML = req.mode === 'navigate' ||
+    (req.method === 'GET' && req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
+
+  if (isHTML) {
+    e.respondWith(
+      fetch(req)
+        .then(res => { caches.open(CACHE).then(c => c.put(req, res.clone())); return res; })
+        .catch(() => caches.match(req).then(c => c || caches.match('/Grupo-Ethos/index.html')))
+    );
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('/Grupo-Ethos/')))
+    caches.match(req).then(cached => cached || fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
+      return res;
+    }).catch(()=>cached))
   );
 });
 
