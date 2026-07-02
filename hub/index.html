@@ -1902,6 +1902,16 @@ function definirUsuario(qual){
 function abrirTrocarUsuario(){pedirUsuario(false);}
 
 /* ══════════════ SINCRONIZAÇÃO (Firebase Realtime DB) ══════════════ */
+// Configuração Firebase do Grupo Ethos (sincronização automática entre os dispositivos)
+const FIREBASE_CFG={
+  apiKey:"AIzaSyA5lbA_osNDarZwvITIIQLZnTerXmNQwkI",
+  authDomain:"grupo-ethos.firebaseapp.com",
+  databaseURL:"https://grupo-ethos-default-rtdb.firebaseio.com",
+  projectId:"grupo-ethos",
+  storageBucket:"grupo-ethos.firebasestorage.app",
+  messagingSenderId:"469552243922",
+  appId:"1:469552243922:web:b637cb8476daa78afbb90b"
+};
 let fbRef=null,syncOn=false,pushT=null;
 function syncStatus(state,txt){const p=document.getElementById('sync-pill');if(!p)return;p.classList.toggle('ok',state==='ok');const d=p.querySelector('.sb-dot');if(d)d.style.background=state==='ok'?'var(--green)':state==='err'?'var(--red)':'var(--muted)';document.getElementById('sync-txt').textContent=txt;}
 function syncStart(cfg){
@@ -1986,8 +1996,9 @@ if(!LS.get('vencNorm')){
 document.getElementById('dash-data').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 if('Notification'in window&&Notification.permission==='granted')document.getElementById('btn-notif').style.display='none';
 renderUserChip();
-// reconecta sincronização salva (após o SDK carregar)
-if(syncCfg){syncStatus('','Conectando...');window.addEventListener('load',()=>setTimeout(()=>syncStart(syncCfg),400));}
+// conecta a sincronização automaticamente (config embutida do Grupo Ethos)
+syncStatus('','Conectando...');
+window.addEventListener('load',()=>setTimeout(()=>syncStart(syncCfg||FIREBASE_CFG),500));
 window.addEventListener('load',()=>renderAll());
 renderAll();
 </script>
