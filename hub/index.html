@@ -57,6 +57,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .sp-btn:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(41,121,255,0.3);}
 @keyframes spfade{0%{opacity:0;transform:translateY(24px);}100%{opacity:1;transform:translateY(0);}}
 
+/* ═══ LOGIN ═══ */
+.login-gate{position:fixed;inset:0;z-index:1500;background:linear-gradient(160deg,#0b1f4d,#050a1c);display:none;align-items:center;justify-content:center;padding:24px;padding-top:max(24px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom));}
+.login-gate.show{display:flex;}
+.login-card{width:360px;max-width:100%;display:flex;flex-direction:column;gap:14px;text-align:center;}
+.login-logo{font-size:1.5rem;font-weight:800;letter-spacing:0.14em;color:#fff;}
+.login-logo span{color:#5b9dff;font-weight:400;margin:0 4px;}
+.login-sub{font-size:0.74rem;letter-spacing:0.22em;text-transform:uppercase;color:#7fa0d6;margin-bottom:12px;}
+.login-card input{padding:13px 15px;background:rgba(255,255,255,0.06);border:1px solid rgba(120,168,255,0.25);border-radius:12px;color:#fff;font-size:16px;font-family:inherit;outline:none;transition:border-color 0.15s;}
+.login-card input:focus{border-color:#5b9dff;}
+.login-card input::placeholder{color:#6b86b8;}
+.login-btn{padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,#2979ff,#1a4fff);color:#fff;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.18s;margin-top:4px;font-family:inherit;}
+.login-btn:hover{box-shadow:0 6px 24px rgba(41,121,255,0.45);transform:translateY(-1px);}
+.login-btn:disabled{opacity:0.6;cursor:default;}
+.login-link{background:none;border:none;color:#7fa0d6;font-size:0.78rem;cursor:pointer;padding:6px;text-decoration:underline;font-family:inherit;}
+.login-link:hover{color:#a9c4ef;}
+.login-erro{font-size:0.78rem;color:#ff8b8b;min-height:14px;line-height:1.4;}
+
 /* ═══ AMBIENT BG ═══ */
 .amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
 .amb-ray{position:absolute;border-radius:50%;filter:blur(70px);opacity:0;}
@@ -441,6 +458,19 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 </head>
 <body>
 
+<!-- ═══ LOGIN ═══ -->
+<div id="login-gate" class="login-gate">
+  <div class="login-card">
+    <div class="login-logo">GRUPO <span>|</span> ETHOS</div>
+    <div class="login-sub">Acesso ao Hub</div>
+    <input id="login-email" type="email" autocomplete="username" placeholder="E-mail" onkeydown="if(event.key==='Enter')document.getElementById('login-senha').focus()"/>
+    <input id="login-senha" type="password" autocomplete="current-password" placeholder="Senha" onkeydown="if(event.key==='Enter')fazerLogin()"/>
+    <div id="login-erro" class="login-erro"></div>
+    <button class="login-btn" id="login-btn" onclick="fazerLogin()">Entrar</button>
+    <button class="login-link" onclick="entrarLocal()">Entrar sem sincronizar (modo local)</button>
+  </div>
+</div>
+
 <!-- ═══ SPLASH ═══ -->
 <div id="splash">
   <div class="sp-rays"><div class="spr spr1"></div><div class="spr spr2"></div><div class="spr spr3"></div><div class="spo spo1"></div></div>
@@ -491,6 +521,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
     <button class="sb-pill" id="btn-instalar" onclick="instalarApp()" style="display:none"><span>⬇</span><span>Instalar como App</span></button>
     <button class="sb-pill" onclick="baixarBackup()"><span>💾</span><span>Baixar backup</span></button>
     <button class="sb-pill" id="btn-notif" onclick="pedirNotificacoes()"><span>🔔</span><span>Ativar notificações</span></button>
+    <button class="sb-pill" onclick="sairConta()"><span>⎋</span><span>Sair / trocar conta</span></button>
   </div>
 </aside>
 
@@ -738,6 +769,7 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script>
 /* ══════════════ ESTADO ══════════════ */
 const LS={get:k=>{try{return JSON.parse(localStorage.getItem('ethos2_'+k))}catch(e){return null}},set:(k,v)=>localStorage.setItem('ethos2_'+k,JSON.stringify(v))};
@@ -818,6 +850,7 @@ let aiPending=null;
 let socios=LS.get('socios')||['CEO Vinícius','CEO Lucas'];
 let usuarioAtual=LS.get('usuarioAtual')||null;
 let syncCfg=LS.get('syncCfg')||null;
+let localMode=LS.get('localMode')||false;
 let deviceId=LS.get('deviceId');if(!deviceId){deviceId='d'+Math.random().toString(36).slice(2,9);LS.set('deviceId',deviceId);}
 const SYNC_KEYS=['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros'];
 let aplicandoRemoto=false;
@@ -1913,6 +1946,7 @@ const FIREBASE_CFG={
   appId:"1:469552243922:web:b637cb8476daa78afbb90b"
 };
 let fbRef=null,syncOn=false,pushT=null;
+let fbAuth=null,authUser=null,authPronto=false;
 function syncStatus(state,txt){const p=document.getElementById('sync-pill');if(!p)return;p.classList.toggle('ok',state==='ok');const d=p.querySelector('.sb-dot');if(d)d.style.background=state==='ok'?'var(--green)':state==='err'?'var(--red)':'var(--muted)';document.getElementById('sync-txt').textContent=txt;}
 function syncStart(cfg){
   try{
@@ -1978,8 +2012,59 @@ function baixarBackup(){
   mostrarToast('💾 Backup baixado');
 }
 
+/* ══════════════ AUTENTICAÇÃO (login por email/senha) ══════════════ */
+function authInit(){
+  try{
+    if(!window.firebase||!firebase.auth){authPronto=true;mostrarLoginSeNecessario();return;}
+    if(!firebase.apps.length)firebase.initializeApp(syncCfg||FIREBASE_CFG);
+    fbAuth=firebase.auth();
+    fbAuth.onAuthStateChanged(u=>{
+      authUser=u;authPronto=true;
+      if(u){
+        // logado: nome do usuário = nome salvo ou parte do email
+        if(!usuarioAtual){usuarioAtual=u.displayName||(u.email?u.email.split('@')[0]:'Usuário');LS.set('usuarioAtual',usuarioAtual);}
+        renderUserChip();esconderLogin();
+        syncStart(syncCfg||FIREBASE_CFG);
+      }else{
+        syncOn=false;
+        if(!localMode)mostrarLoginSeNecessario();
+      }
+    });
+  }catch(e){authPronto=true;mostrarLoginSeNecessario();}
+}
+function mostrarLoginSeNecessario(){
+  // só mostra depois que o splash saiu
+  if(localMode||authUser)return;
+  if(document.getElementById('splash').style.display==='none')document.getElementById('login-gate').classList.add('show');
+}
+function esconderLogin(){document.getElementById('login-gate').classList.remove('show');}
+function fazerLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const senha=document.getElementById('login-senha').value;
+  const erro=document.getElementById('login-erro');erro.textContent='';
+  if(!email||!senha){erro.textContent='Preencha email e senha.';return;}
+  if(!fbAuth){erro.textContent='Conexão indisponível. Tente o modo local.';return;}
+  const btn=document.getElementById('login-btn');btn.disabled=true;btn.textContent='Entrando...';
+  fbAuth.signInWithEmailAndPassword(email,senha)
+    .then(()=>{btn.disabled=false;btn.textContent='Entrar';})
+    .catch(err=>{btn.disabled=false;btn.textContent='Entrar';erro.textContent=traduzErroAuth(err.code);});
+}
+function entrarLocal(){localMode=true;LS.set('localMode',true);esconderLogin();mostrarToast('Modo local (sem sincronização)');if(!usuarioAtual)pedirUsuario(true);}
+function sairConta(){
+  if(fbAuth&&authUser){fbAuth.signOut();}
+  localMode=false;LS.set('localMode',false);
+  usuarioAtual=null;LS.set('usuarioAtual',null);
+  if(fbRef){try{fbRef.off()}catch(e){}fbRef=null;}syncOn=false;
+  document.getElementById('login-gate').classList.add('show');
+  closeModalEl&&closeModalEl();
+}
+function traduzErroAuth(code){
+  const m={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado. Crie a conta no Firebase.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha incorretos.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco.','auth/operation-not-allowed':'Ative o login por E-mail/Senha no Firebase.','auth/network-request-failed':'Sem conexão com a internet.'};
+  return m[code]||('Não foi possível entrar ('+code+').');
+}
+
 /* ══════════════ SPLASH ══════════════ */
-function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';if(!usuarioAtual)pedirUsuario(true);},900);}
+function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';if(authUser||localMode){if(!usuarioAtual)pedirUsuario(true);}else{mostrarLoginSeNecessario();}},900);}
 setTimeout(()=>{if(document.getElementById('splash').style.display!=='none')entrar();},7000);
 
 /* ══════════════ INIT ══════════════ */
@@ -1996,9 +2081,9 @@ if(!LS.get('vencNorm')){
 document.getElementById('dash-data').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 if('Notification'in window&&Notification.permission==='granted')document.getElementById('btn-notif').style.display='none';
 renderUserChip();
-// conecta a sincronização automaticamente (config embutida do Grupo Ethos)
+// inicia a autenticação; a sincronização conecta após o login (ou fica em modo local)
 syncStatus('','Conectando...');
-window.addEventListener('load',()=>setTimeout(()=>syncStart(syncCfg||FIREBASE_CFG),500));
+window.addEventListener('load',()=>setTimeout(authInit,500));
 window.addEventListener('load',()=>renderAll());
 renderAll();
 </script>
