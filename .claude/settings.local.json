@@ -6,7 +6,17 @@
       "mcp__Claude_Preview__preview_start",
       "mcp__visualize__read_me",
       "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; Set-Location \"C:\\\\Users\\\\vinic\\\\Grupo Ethos\"; git add hub/index.html; git commit -m \"Redesign hub: visual azul estilo iOS/Opal com sidebar e cards\"; git push -u origin hub/redesign-azul 2>&1)",
-      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; gh api repos/ogrupoethos-collab/Grupo-Ethos/pages/builds/latest --jq '.status' 2>&1)"
+      "PowerShell($env:PATH += \";C:\\\\Program Files\\\\GitHub CLI\"; gh api repos/ogrupoethos-collab/Grupo-Ethos/pages/builds/latest --jq '.status' 2>&1)",
+      "Bash(command -v node)",
+      "Bash(command -v npm)",
+      "Bash(command -v python3)",
+      "Bash(command -v python)",
+      "Bash(command -v soffice)",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\vinic\\\\Downloads\\\\Apresentacao-Grupo-Ethos.html\")",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\vinic\\\\Downloads\\\\Metodo-Ethos-Projeto-Educacional.html\")",
+      "mcp__visualize__show_widget",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\vinic\\\\Downloads\\\\TRINCA-Ecossistema-Educacional.html\")",
+      "PowerShell(Start-Process \"C:\\\\Users\\\\vinic\\\\Downloads\\\\Deck-Reuniao-Socios-Ecossistema.html\")"
     ]
   }
 }

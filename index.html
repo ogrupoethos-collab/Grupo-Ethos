@@ -650,23 +650,41 @@ td.neg{text-align:right;color:var(--red);font-weight:700;}
 <!-- ═══ FINANCEIRO ═══ -->
 <div class="section" id="financeiro">
   <div class="page-head"><div><h1><span>Financeiro</span></h1><div class="sub">Receitas, custos e indicadores calculados automaticamente</div></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-sm" onclick="openModal('receita')">+ Receita</button><button class="btn btn-sm" onclick="openModal('custo')">+ Custo</button></div>
+    <div style="display:flex;gap:8px" id="fin-actions"><button class="btn btn-sm" onclick="openModal('receita')">+ Receita</button><button class="btn btn-sm" onclick="openModal('custo')">+ Custo</button></div>
   </div>
-  <div class="kpi-grid" id="fin-kpis"></div>
-  <div class="grid-2">
-    <div class="card"><div class="card-head"><div><div class="card-title">Receitas</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
-      <thead><tr><th>Origem</th><th>Tipo</th><th class="num">Valor</th><th></th></tr></thead>
-      <tbody id="fin-receitas"></tbody>
-      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="pos" id="fin-rec-total"></td><td></td></tr></tfoot>
-    </table></div></div>
-    <div class="card"><div class="card-head"><div><div class="card-title">Custos</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
-      <thead><tr><th>Descrição</th><th>Categoria</th><th class="num">Valor</th><th></th></tr></thead>
-      <tbody id="fin-custos"></tbody>
-      <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="neg" id="fin-cus-total"></td><td></td></tr></tfoot>
-    </table></div></div>
+  <div class="tabs">
+    <button class="tab active" onclick="finView('atual',this)">Visão atual</button>
+    <button class="tab" onclick="finView('meses',this)">Mês a mês</button>
   </div>
-  <div class="card"><div class="card-head"><div class="card-title">Demonstrativo de Resultado</div></div>
-    <div style="padding:8px 0" id="fin-dre"></div>
+
+  <!-- VISÃO ATUAL -->
+  <div id="fin-atual">
+    <div class="kpi-grid" id="fin-kpis"></div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div><div class="card-title">Receitas</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
+        <thead><tr><th>Origem</th><th>Tipo</th><th class="num">Valor</th><th></th></tr></thead>
+        <tbody id="fin-receitas"></tbody>
+        <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="pos" id="fin-rec-total"></td><td></td></tr></tfoot>
+      </table></div></div>
+      <div class="card"><div class="card-head"><div><div class="card-title">Custos</div><div class="card-sub">Clique nos valores para editar</div></div></div><div class="tbl-wrap"><table>
+        <thead><tr><th>Descrição</th><th>Categoria</th><th class="num">Valor</th><th></th></tr></thead>
+        <tbody id="fin-custos"></tbody>
+        <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="neg" id="fin-cus-total"></td><td></td></tr></tfoot>
+      </table></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">Demonstrativo de Resultado</div></div>
+      <div style="padding:8px 0" id="fin-dre"></div>
+    </div>
+  </div>
+
+  <!-- MÊS A MÊS -->
+  <div id="fin-meses" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <select class="row-sel" id="mes-select" style="font-size:0.9rem;padding:8px 14px;background:var(--surfaceSolid);border:1px solid var(--border2);color:var(--text)" onchange="renderMesAtual()"></select>
+      <button class="btn btn-sm btn-primary" onclick="novoMes()">+ Novo mês</button>
+      <button class="btn btn-sm" onclick="excluirMes()">Excluir mês</button>
+    </div>
+    <div id="mes-conteudo"></div>
   </div>
 </div>
 
@@ -845,6 +863,8 @@ let notificacoes=LS.get('notificacoes')||[];
 let pagamentos=LS.get('pagamentos')||[];
 let aiHistory=LS.get('aiHistory')||[];
 let aiErros=LS.get('aiErros')||0;
+let meses=LS.get('meses')||[];
+let mesAtivo=LS.get('mesAtivo')||null;
 let aiPending=null;
 // identidade (por dispositivo) e sincronização
 let socios=LS.get('socios')||['CEO Vinícius','CEO Lucas'];
@@ -852,7 +872,7 @@ let usuarioAtual=LS.get('usuarioAtual')||null;
 let syncCfg=LS.get('syncCfg')||null;
 let localMode=LS.get('localMode')||false;
 let deviceId=LS.get('deviceId');if(!deviceId){deviceId='d'+Math.random().toString(36).slice(2,9);LS.set('deviceId',deviceId);}
-const SYNC_KEYS=['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros'];
+const SYNC_KEYS=['clientes','pipeline','producao','tarefas','eventos','receitasAvulsas','custos','metas','atividades','notificacoes','pagamentos','aiHistory','aiErros','meses'];
 let aplicandoRemoto=false;
 
 function save(){SYNC_KEYS.forEach(k=>LS.set(k,eval(k)));if(!aplicandoRemoto)syncPush();}
@@ -1423,6 +1443,113 @@ function renderFinDerivados(){
     <div class="info-row" style="padding:12px 20px"><span class="lbl">(−) Custos variáveis</span><span class="val" style="color:var(--red)">${brl(K.custoVar)}</span></div>
     <div class="info-row" style="padding:14px 20px;background:rgba(41,121,255,0.05)"><span class="lbl" style="font-weight:700;color:var(--text)">(=) Lucro líquido</span><span class="val" style="font-size:1.1rem;font-weight:800;color:${K.lucro>=0?'var(--green)':'var(--red)'}">${brl(K.lucro)}</span></div>`;}
 }
+/* ══════════════ MÊS A MÊS (histórico financeiro) ══════════════ */
+const MES_NOMES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function refAtualMes(){return new Date().toISOString().slice(0,7);}
+function mesLabel(ref){const p=ref.split('-');return MES_NOMES[+p[1]-1]+' '+p[0];}
+function proxRef(ref){let p=ref.split('-').map(Number),y=p[0],m=p[1]+1;if(m>12){m=1;y++;}return y+'-'+String(m).padStart(2,'0');}
+function mesGet(){return meses.find(x=>x.ref===mesAtivo);}
+function ensureMesInicial(){
+  if(meses.length===0){
+    const ref=refAtualMes();
+    meses.push({id:uid(),ref,clientes:clientes.filter(c=>c.status==='Ativo').map(c=>({id:uid(),nome:c.nome,valor:Number(c.valorMensal||0),pago:false})),custos:custos.map(c=>({id:uid(),desc:c.desc,valor:Number(c.valor||0),tipo:c.tipo||'fixo'}))});
+    mesAtivo=ref;save();
+  }
+}
+function finView(v,btn){
+  document.querySelectorAll('#financeiro .tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  const atual=v==='atual';
+  document.getElementById('fin-atual').style.display=atual?'block':'none';
+  document.getElementById('fin-meses').style.display=atual?'none':'block';
+  document.getElementById('fin-actions').style.display=atual?'flex':'none';
+  if(!atual)renderFinMeses();
+}
+function renderFinMeses(){
+  ensureMesInicial();
+  const ord=[...meses].sort((a,b)=>a.ref<b.ref?1:-1);
+  if(!mesAtivo||!meses.some(m=>m.ref===mesAtivo))mesAtivo=ord[0].ref;
+  const sel=document.getElementById('mes-select');
+  if(sel)sel.innerHTML=ord.map(m=>`<option value="${m.ref}" ${m.ref===mesAtivo?'selected':''}>${mesLabel(m.ref)}</option>`).join('');
+  renderMesAtual();
+}
+function novoMes(){
+  ensureMesInicial();
+  const ult=[...meses].sort((a,b)=>a.ref<b.ref?1:-1)[0];
+  const ref=proxRef(ult.ref);
+  if(meses.some(m=>m.ref===ref)){mesAtivo=ref;save();renderFinMeses();return mostrarToast('Esse mês já existe');}
+  meses.push({id:uid(),ref,clientes:ult.clientes.map(c=>({id:uid(),nome:c.nome,valor:c.valor,pago:false})),custos:ult.custos.map(c=>({id:uid(),desc:c.desc,valor:c.valor,tipo:c.tipo}))});
+  mesAtivo=ref;save();renderFinMeses();mostrarToast('✓ '+mesLabel(ref)+' criado · clientes e custos copiados');
+}
+function excluirMes(){
+  const m=mesGet();if(!m)return;
+  if(!confirm('Excluir '+mesLabel(m.ref)+'? O histórico desse mês será perdido.'))return;
+  meses=meses.filter(x=>x.ref!==m.ref);
+  mesAtivo=meses.length?[...meses].sort((a,b)=>a.ref<b.ref?1:-1)[0].ref:null;
+  save();renderFinMeses();mostrarToast('Mês excluído');
+}
+function renderMesTotais(){
+  const m=mesGet();if(!m)return;
+  const fat=m.clientes.reduce((a,c)=>a+Number(c.valor||0),0);
+  const receb=m.clientes.filter(c=>c.pago).reduce((a,c)=>a+Number(c.valor||0),0);
+  const cus=m.custos.reduce((a,c)=>a+Number(c.valor||0),0);
+  const cusFixo=m.custos.filter(c=>c.tipo==='fixo').reduce((a,c)=>a+Number(c.valor||0),0);
+  const lucro=fat-cus;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set('mes-fat',brl(fat));set('mes-receb',brl(receb));set('mes-cus',brl(cus));
+  set('mes-fat-sub',m.clientes.length+' clientes');set('mes-cus-sub','fixo '+brl(cusFixo));
+  set('mes-cli-total',brl(fat));set('mes-cus-total',brl(cus));
+  const le=document.getElementById('mes-lucro');if(le){le.textContent=brl(lucro);le.style.color=lucro>=0?'var(--green)':'var(--red)';}
+}
+function renderMesAtual(){
+  const sel=document.getElementById('mes-select');if(sel&&sel.value)mesAtivo=sel.value;
+  const m=mesGet();const box=document.getElementById('mes-conteudo');
+  if(!m){box.innerHTML='<div class="empty"><div class="empty-ic">▦</div>Nenhum mês. Toque em "+ Novo mês".</div>';return;}
+  const fat=m.clientes.reduce((a,c)=>a+Number(c.valor||0),0);
+  const receb=m.clientes.filter(c=>c.pago).reduce((a,c)=>a+Number(c.valor||0),0);
+  const cus=m.custos.reduce((a,c)=>a+Number(c.valor||0),0);
+  const cusFixo=m.custos.filter(c=>c.tipo==='fixo').reduce((a,c)=>a+Number(c.valor||0),0);
+  const lucro=fat-cus;
+  box.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi c-green"><div class="kpi-top"><span class="kpi-label">Faturamento</span><span class="kpi-ic">$</span></div><div class="kpi-val" id="mes-fat">${brl(fat)}</div><div class="kpi-sub" id="mes-fat-sub">${m.clientes.length} clientes</div></div>
+      <div class="kpi c-blue"><div class="kpi-top"><span class="kpi-label">Recebido</span><span class="kpi-ic">✓</span></div><div class="kpi-val" id="mes-receb">${brl(receb)}</div><div class="kpi-sub">pagos no mês</div></div>
+      <div class="kpi c-red"><div class="kpi-top"><span class="kpi-label">Custos</span><span class="kpi-ic">▦</span></div><div class="kpi-val" id="mes-cus">${brl(cus)}</div><div class="kpi-sub" id="mes-cus-sub">fixo ${brl(cusFixo)}</div></div>
+      <div class="kpi c-purple"><div class="kpi-top"><span class="kpi-label">Lucro</span><span class="kpi-ic">▲</span></div><div class="kpi-val" id="mes-lucro" style="color:${lucro>=0?'var(--green)':'var(--red)'}">${brl(lucro)}</div><div class="kpi-sub">${mesLabel(m.ref)}</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div><div class="card-title">Clientes de ${mesLabel(m.ref)}</div><div class="card-sub">Clique para editar · marque como pago</div></div><button class="add-btn" onclick="addMesCli()">+ Cliente</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Cliente</th><th class="num">Valor</th><th>Situação</th><th></th></tr></thead>
+          <tbody>${m.clientes.map(c=>`<tr>
+            <td><span class="edit-cell" contenteditable onblur="setMesCli('${c.id}','nome',this.textContent)">${c.nome}</span></td>
+            <td class="pos"><span class="edit-cell" contenteditable onblur="setMesCli('${c.id}','valor',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(c.valor||0)}</span></td>
+            <td><button class="badge ${c.pago?'bg-green':'bg-yellow'}" style="border:none;cursor:pointer" onclick="toggleMesPago('${c.id}')"><span class="bd"></span>${c.pago?'Pago':'Pendente'}</button></td>
+            <td style="text-align:right"><button class="del-btn" onclick="delMesCli('${c.id}')" title="Remover">✕</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Sem clientes neste mês</td></tr>'}</tbody>
+          <tfoot><tr class="total-row"><td><b>Total</b></td><td class="pos" id="mes-cli-total">${brl(fat)}</td><td colspan="2"></td></tr></tfoot>
+        </table></div>
+      </div>
+      <div class="card"><div class="card-head"><div><div class="card-title">Custos de ${mesLabel(m.ref)}</div><div class="card-sub">Toque na categoria p/ fixo ⇄ variável</div></div><button class="add-btn" onclick="addMesCusto()">+ Custo</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Descrição</th><th>Tipo</th><th class="num">Valor</th><th></th></tr></thead>
+          <tbody>${m.custos.map(c=>`<tr>
+            <td><span class="edit-cell" contenteditable onblur="setMesCusto('${c.id}','desc',this.textContent)">${c.desc}</span></td>
+            <td><button class="badge ${c.tipo==='fixo'?'bg-orange':'bg-gray'}" style="border:none;cursor:pointer" onclick="toggleMesCustoTipo('${c.id}')">${c.tipo==='fixo'?'Fixo':'Variável'}</button></td>
+            <td class="neg"><span class="edit-cell" contenteditable onblur="setMesCusto('${c.id}','valor',this.textContent)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">${Number(c.valor||0)}</span></td>
+            <td style="text-align:right"><button class="del-btn" onclick="delMesCusto('${c.id}')" title="Remover">✕</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Sem custos neste mês</td></tr>'}</tbody>
+          <tfoot><tr class="total-row"><td colspan="2"><b>Total</b></td><td class="neg" id="mes-cus-total">${brl(cus)}</td><td></td></tr></tfoot>
+        </table></div>
+      </div>
+    </div>`;
+}
+function setMesCli(id,campo,t){const m=mesGet();if(!m)return;const c=m.clientes.find(x=>x.id===id);if(c){c[campo]=campo==='valor'?parseNum(t):String(t).trim();save();renderMesTotais();}}
+function addMesCli(){const m=mesGet();if(!m)return;m.clientes.push({id:uid(),nome:'Novo cliente',valor:0,pago:false});save();renderMesAtual();}
+function delMesCli(id){const m=mesGet();if(!m)return;m.clientes=m.clientes.filter(x=>x.id!==id);save();renderMesAtual();}
+function toggleMesPago(id){const m=mesGet();if(!m)return;const c=m.clientes.find(x=>x.id===id);if(c){c.pago=!c.pago;save();renderMesAtual();}}
+function setMesCusto(id,campo,t){const m=mesGet();if(!m)return;const c=m.custos.find(x=>x.id===id);if(c){c[campo]=campo==='valor'?parseNum(t):String(t).trim();save();renderMesTotais();}}
+function addMesCusto(){const m=mesGet();if(!m)return;m.custos.push({id:uid(),desc:'Novo custo',valor:0,tipo:'fixo'});save();renderMesAtual();}
+function delMesCusto(id){const m=mesGet();if(!m)return;m.custos=m.custos.filter(x=>x.id!==id);save();renderMesAtual();}
+function toggleMesCustoTipo(id){const m=mesGet();if(!m)return;const c=m.custos.find(x=>x.id===id);if(c){c.tipo=c.tipo==='fixo'?'variavel':'fixo';save();renderMesAtual();}}
+
 function setClienteValor(id,t){const c=clientes.find(x=>x.id===id);if(c){c.valorMensal=parseNum(t);finRecalc();}}
 function setReceita(id,campo,t){const r=receitasAvulsas.find(x=>x.id===id);if(r){r[campo]=campo==='valor'?parseNum(t):String(t).trim();finRecalc();}}
 function delReceita(id){receitasAvulsas=receitasAvulsas.filter(x=>x.id!==id);refresh();mostrarToast('Receita removida');}
