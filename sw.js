@@ -1,4 +1,4 @@
-const CACHE = 'ethos-v9';
+const CACHE = 'ethos-v10';
 const ASSETS = [
   '/Grupo-Ethos/manifest.json',
   '/Grupo-Ethos/icon-192.png',

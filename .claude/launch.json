@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "Hub Grupo Ethos",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "hub"],
+      "runtimeExecutable": "pwsh",
+      "runtimeArgs": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".claude/serve.ps1", "-Port", "3000", "-Root", "hub"],
       "port": 3000
     }
   ]

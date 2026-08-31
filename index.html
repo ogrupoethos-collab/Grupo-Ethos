@@ -2103,22 +2103,23 @@ function syncPush(){
   }catch(e){}},700);
 }
 function abrirSync(){
-  const conectado=syncOn;
-  showModal(`<div class="modal lg"><div class="modal-head"><div><h2>Sincronização entre dispositivos</h2><div class="mh-sub">${conectado?'✓ Conectado — vocês veem os mesmos dados em tempo real':'Conecte um banco Firebase grátis para você e seu sócio compartilharem o hub'}</div></div><button class="modal-close" onclick="closeModalEl()">✕</button></div>
+  showModal(`<div class="modal"><div class="modal-head"><div><h2>Sincronização</h2><div class="mh-sub">${syncOn?'✓ Conectado ao banco compartilhado':'⏳ Conectando...'}</div></div><button class="modal-close" onclick="closeModalEl()">✕</button></div>
     <div class="modal-body">
-      ${conectado?'<div class="ai-response" style="margin-bottom:16px">✓ Sincronização ativa. Qualquer alteração aparece no aparelho do seu sócio automaticamente.</div>':''}
-      <div style="font-size:0.82rem;color:var(--text2);line-height:1.6;margin-bottom:16px">
-        <b style="color:#fff">Passo a passo (só uma vez, ~5 min):</b><br>
-        1. Acesse <span style="color:var(--blue-lit)">console.firebase.google.com</span> e faça login com o Google.<br>
-        2. Clique em <b>Adicionar projeto</b> → dê o nome "Grupo Ethos" → avançar até criar.<br>
-        3. No menu, abra <b>Realtime Database</b> → <b>Criar banco de dados</b> → escolha local → inicie em <b>modo de teste</b>.<br>
-        4. Volte em <b>Visão geral do projeto</b> → ícone <b>&lt;/&gt;</b> (Web) → registre o app → copie o bloco <b>firebaseConfig</b>.<br>
-        5. Cole o bloco aqui embaixo e toque em <b>Conectar</b>.
+      <div class="ai-response" style="margin-bottom:14px">${syncOn?'✓ Este aparelho está sincronizado. Tudo que você salva aparece no aparelho do seu sócio automaticamente.':'⏳ Tentando conectar ao banco compartilhado. Verifique a internet e recarregue.'}</div>
+      <div style="font-size:0.83rem;color:var(--text2);line-height:1.65">
+        <b style="color:#fff">Se os dados não estão batendo entre vocês:</b><br>
+        1. Escolham <b>UM aparelho</b> — o que tiver os dados mais corretos.<br>
+        2. Nesse aparelho, toque em <b>"Enviar meus dados"</b> abaixo.<br>
+        3. No outro aparelho, recarregue a página (botão ↻) — ele vai puxar os dados certos.
       </div>
-      <div class="field"><label>Cole aqui o firebaseConfig</label><textarea id="sync-cfg" style="min-height:150px;font-family:var(--font-mono,monospace);font-size:13px" placeholder="const firebaseConfig = {\n  apiKey: '...',\n  authDomain: '...',\n  databaseURL: 'https://....firebasedatabase.app',\n  projectId: '...'\n};">${syncCfg?JSON.stringify(syncCfg,null,2):''}</textarea></div>
-      <div class="ai-response pergunta" style="font-size:0.78rem">💡 O mesmo firebaseConfig deve ser colado no aparelho do seu sócio também — aí os dois ficam conectados ao mesmo banco.</div>
+      <div class="ai-response pergunta" style="font-size:0.78rem;margin-top:14px">💡 Dica: antes de enviar, quem tiver dados que só existem no seu aparelho pode tocar em <b>💾 Baixar backup</b> na barra lateral, por segurança.</div>
     </div>
-    <div class="modal-foot">${conectado?'<button class="btn" style="margin-right:auto;color:var(--red);border-color:rgba(255,107,107,0.3)" onclick="syncDesconectar()">Desconectar</button>':''}<button class="btn" onclick="closeModalEl()">Fechar</button><button class="btn btn-primary" onclick="conectarSync()">Conectar</button></div></div>`);
+    <div class="modal-foot"><button class="btn" onclick="location.reload()">↻ Recarregar</button><button class="btn btn-primary" onclick="forcarEnvio()">⬆ Enviar meus dados</button></div></div>`);
+}
+function forcarEnvio(){
+  if(!syncOn||!fbRef)return mostrarToast('Sincronização ainda não conectou. Recarregue.');
+  if(!confirm('Isto vai SOBRESCREVER os dados da nuvem com os DESTE aparelho. O aparelho do seu sócio vai passar a mostrar estes dados. Continuar?'))return;
+  try{const data={};SYNC_KEYS.forEach(k=>data[k]=eval(k));fbRef.set({data,updatedAt:Date.now(),updatedBy:deviceId,updatedName:usuarioAtual||'—'});mostrarToast('⬆ Dados deste aparelho enviados para a nuvem');closeModalEl();}catch(e){mostrarToast('Erro ao enviar');}
 }
 function conectarSync(){
   const raw=document.getElementById('sync-cfg').value.trim();
@@ -2159,11 +2160,7 @@ function authInit(){
     });
   }catch(e){authPronto=true;mostrarLoginSeNecessario();}
 }
-function mostrarLoginSeNecessario(){
-  // só mostra depois que o splash saiu
-  if(localMode||authUser)return;
-  if(document.getElementById('splash').style.display==='none')document.getElementById('login-gate').classList.add('show');
-}
+function mostrarLoginSeNecessario(){/* login desativado — sincronização é automática, sem trava */}
 function esconderLogin(){document.getElementById('login-gate').classList.remove('show');}
 function fazerLogin(){
   const email=document.getElementById('login-email').value.trim();
@@ -2178,12 +2175,10 @@ function fazerLogin(){
 }
 function entrarLocal(){localMode=true;LS.set('localMode',true);esconderLogin();mostrarToast('Modo local (sem sincronização)');if(!usuarioAtual)pedirUsuario(true);}
 function sairConta(){
-  if(fbAuth&&authUser){fbAuth.signOut();}
-  localMode=false;LS.set('localMode',false);
+  // agora apenas troca de perfil (Vinícius ⇄ Lucas) — a sincronização continua ativa
   usuarioAtual=null;LS.set('usuarioAtual',null);
-  if(fbRef){try{fbRef.off()}catch(e){}fbRef=null;}syncOn=false;
-  document.getElementById('login-gate').classList.add('show');
   closeModalEl&&closeModalEl();
+  pedirUsuario(true);
 }
 function traduzErroAuth(code){
   const m={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado. Crie a conta no Firebase.','auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha incorretos.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco.','auth/operation-not-allowed':'Ative o login por E-mail/Senha no Firebase.','auth/network-request-failed':'Sem conexão com a internet.'};
@@ -2191,7 +2186,7 @@ function traduzErroAuth(code){
 }
 
 /* ══════════════ SPLASH ══════════════ */
-function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';if(authUser||localMode){if(!usuarioAtual)pedirUsuario(true);}else{mostrarLoginSeNecessario();}},900);}
+function entrar(){document.getElementById('splash').classList.add('hide');setTimeout(()=>{document.getElementById('splash').style.display='none';document.getElementById('app').style.opacity='1';if(!usuarioAtual)pedirUsuario(true);},900);}
 setTimeout(()=>{if(document.getElementById('splash').style.display!=='none')entrar();},7000);
 
 /* ══════════════ INIT ══════════════ */
@@ -2208,9 +2203,10 @@ if(!LS.get('vencNorm')){
 document.getElementById('dash-data').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
 if('Notification'in window&&Notification.permission==='granted')document.getElementById('btn-notif').style.display='none';
 renderUserChip();
-// inicia a autenticação; a sincronização conecta após o login (ou fica em modo local)
+// sincronização AUTOMÁTICA (sem login) — conecta os dois dispositivos ao mesmo banco
+localMode=false;LS.set('localMode',false);
 syncStatus('','Conectando...');
-window.addEventListener('load',()=>setTimeout(authInit,500));
+window.addEventListener('load',()=>setTimeout(()=>{syncStart(syncCfg||FIREBASE_CFG);if(!usuarioAtual)pedirUsuario(true);},600));
 window.addEventListener('load',()=>renderAll());
 renderAll();
 </script>
