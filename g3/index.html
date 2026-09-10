@@ -190,6 +190,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
   .panel{border-left:none;border-top:1px solid var(--ui-line2);max-height:46vh}
   .appbar .tpl-label{display:none}
 }
+@media (max-width:560px){
+  .brandmini small{display:none}      /* libera espaço p/ o botão Baixar PNG caber */
+  .appbar{gap:10px;padding:0 12px}
+  #resetBtn{padding:0 12px}
+}
 </style>
 </head>
 <body>
@@ -254,9 +259,10 @@ CONSTÂNCIA</h1>
         <label class="filebtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
           Enviar foto
-          <input type="file" id="file" accept="image/*" hidden>
+          <input type="file" id="file" accept="image/*,.heic,.heif" hidden>
         </label>
       </div>
+      <p class="hint" id="photoMsg" style="display:none"></p>
       <div class="field" style="margin-top:14px">
         <div class="rlabel"><span>Enquadramento</span><span id="focoV">50%</span></div>
         <input type="range" id="foco" min="0" max="100" value="50">
@@ -416,9 +422,11 @@ function render(){
 /* ---------- Preview fit ---------- */
 const holder = $("#holder"), port = $("#port");
 function fit(){
-  const availW = port.clientWidth - 60;
-  const availH = port.clientHeight - 60;
-  const s = Math.min(availW/1080, availH/1350, 0.8);
+  const availW = port.clientWidth - 48;
+  const availH = port.clientHeight - 48;
+  let s = Math.min(availW/1080, availH/1350);
+  if(!isFinite(s) || s<=0) s = 0.5;
+  s = Math.min(Math.max(s, 0.26), 0.85);   // piso 26% evita card minúsculo; se não couber, o painel rola
   holder.style.setProperty("--s", s);
   $("#scaleInfo").textContent = Math.round(s*100)+"%";
 }
@@ -472,11 +480,62 @@ $("#s1").style.backgroundImage=`url(${G3.samples[0]})`; $("#s1").style.backgroun
 $("#s2").style.backgroundImage=`url(${G3.samples[1]})`; $("#s2").style.backgroundSize="cover";
 $("#s1").addEventListener("click",()=>setSample(0));
 $("#s2").addEventListener("click",()=>setSample(1));
-$("#file").addEventListener("change", e=>{
+function photoMsg(txt, kind){
+  const el=$("#photoMsg");
+  if(!txt){ el.style.display="none"; el.textContent=""; return; }
+  el.style.display="block";
+  el.textContent=txt;
+  el.style.color = kind==="err" ? "#ff8a8a" : (kind==="ok" ? "var(--ui-text3)" : "var(--sig)");
+}
+function clearSampleSel(){ $("#s1").setAttribute("aria-pressed",false); $("#s2").setAttribute("aria-pressed",false); }
+
+// carrega o conversor HEIC só quando necessário
+let heicPromise=null;
+function ensureHeic(){
+  if(window.heic2any) return Promise.resolve();
+  if(heicPromise) return heicPromise;
+  heicPromise=new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js";
+    s.onload=()=>res(); s.onerror=()=>rej(new Error("Falha ao carregar o conversor HEIC."));
+    document.head.appendChild(s);
+  });
+  return heicPromise;
+}
+
+// se a imagem falhar ao decodificar (ex.: HEIC não convertida), avisa
+$("#photo").addEventListener("error", ()=>{
+  if(($("#photo").getAttribute("src")||"").indexOf("assets/")===0) return; // ignora amostras
+  photoMsg("Não consegui exibir essa imagem. Tente uma foto .JPG ou .PNG.", "err");
+});
+
+$("#file").addEventListener("change", async e=>{
   const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader();
-  rd.onload=()=>{ state.photo=rd.result; $("#s1").setAttribute("aria-pressed",false); $("#s2").setAttribute("aria-pressed",false); render(); };
-  rd.readAsDataURL(f);
+  const isHeic = /hei[cf]/i.test(f.type) || /\.hei[cf]$/i.test(f.name);
+  try{
+    let blob=f;
+    if(isHeic){
+      // muitos ".HEIC" do iPhone já são JPEG; tenta converter, mas cai no original se não precisar/falhar
+      photoMsg("Convertendo foto do iPhone…","info");
+      try{
+        await ensureHeic();
+        const out=await heic2any({blob:f, toType:"image/jpeg", quality:0.9});
+        blob=Array.isArray(out)?out[0]:out;
+      }catch(convErr){
+        console.warn("HEIC: usando arquivo original —", convErr && convErr.message);
+        blob=f;
+      }
+    }
+    const rd=new FileReader();
+    rd.onload=()=>{ state.photo=rd.result; clearSampleSel(); photoMsg(""); render(); };
+    rd.onerror=()=>photoMsg("Erro ao ler a imagem. Tente uma .JPG ou .PNG.","err");
+    rd.readAsDataURL(blob);
+  }catch(err){
+    console.error(err);
+    photoMsg("Não consegui abrir essa foto. Tente uma .JPG ou .PNG.","err");
+  }finally{
+    e.target.value=""; // permite reenviar o mesmo arquivo
+  }
 });
 
 /* reset */
