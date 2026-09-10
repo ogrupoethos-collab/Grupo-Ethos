@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>G3 · Gerador de Cards</title>
+<meta name="theme-color" content="#1b1d25">
+<style>
+/* Barlow oficial (auto-hospedada) — garante a fonte exata no PNG exportado */
+@font-face{font-family:"Barlow";font-weight:400;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-Regular.ttf") format("truetype")}
+@font-face{font-family:"Barlow";font-weight:500;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-Medium.ttf") format("truetype")}
+@font-face{font-family:"Barlow";font-weight:600;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-SemiBold.ttf") format("truetype")}
+@font-face{font-family:"Barlow";font-weight:700;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-Bold.ttf") format("truetype")}
+@font-face{font-family:"Barlow";font-weight:800;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-ExtraBold.ttf") format("truetype")}
+@font-face{font-family:"Barlow";font-weight:900;font-style:normal;font-display:swap;src:url("assets/fonts/Barlow-Black.ttf") format("truetype")}
+/* ============================================================
+   G3 — GERADOR DE CARDS · Etapa 1
+   Camada 1 (tokens) vive no objeto G3 em <script> e nas vars abaixo.
+   Template incluído: "Foto + tarja".
+   ============================================================ */
+:root{
+  --sig:#FFFF00; --ink:#262832; --slate:#484C5F; --grey:#B6B6BF; --mist:#ECECEC;
+  /* UI (estúdio, grafite fixo) */
+  --ui-bg:#16181f; --ui-bg2:#1b1d25; --ui-panel:#212430; --ui-panel2:#191c24;
+  --ui-line:#2f3340; --ui-line2:#272b36; --ui-text:#f2f3f5; --ui-text2:#aeb2c0; --ui-text3:#767b8c;
+  --font:"Barlow",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --cond:var(--font);   /* títulos usam peso Black (900) para impacto */
+  --semi:var(--font);   /* rótulos usam peso 600 + tracking */
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ui-bg);color:var(--ui-text);font-family:var(--font);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font-family:inherit}
+::selection{background:var(--sig);color:#20222c}
+
+/* ---------- App bar ---------- */
+.appbar{height:58px;display:flex;align-items:center;gap:16px;padding:0 18px;
+  background:var(--ui-bg2);border-bottom:1px solid var(--ui-line2);position:relative;z-index:5}
+.brandmini{display:flex;align-items:baseline;gap:.34em;font-family:var(--cond);font-weight:800;font-size:23px}
+.brandmini .g3{letter-spacing:.01em}.brandmini .g3 b{color:var(--sig)}
+.brandmini small{font-family:var(--semi);font-weight:600;font-size:10px;letter-spacing:.22em;
+  color:var(--ui-text3);text-transform:uppercase;transform:translateY(-1px)}
+.appbar .tpl-label{font-family:var(--semi);font-weight:600;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ui-text3);padding:5px 10px;border:1px solid var(--ui-line);border-radius:99px}
+.appbar .spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:9px;height:38px;padding:0 16px;border-radius:10px;
+  border:1px solid transparent;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:.15s}
+.btn.primary{background:var(--sig);color:#20222c;font-weight:700}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.primary:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;border-color:var(--ui-line);color:var(--ui-text2)}
+.btn.ghost:hover{border-color:var(--ui-text3);color:var(--ui-text)}
+.btn[disabled]{opacity:.55;cursor:progress}
+.btn svg{width:17px;height:17px}
+
+/* ---------- Layout ---------- */
+.app{display:grid;grid-template-columns:1fr minmax(340px,380px);height:calc(100% - 58px)}
+.stageport{position:relative;overflow:auto;display:grid;place-items:center;padding:30px;
+  background:
+    radial-gradient(circle at 30% 20%, #202430 0, transparent 60%),
+    radial-gradient(circle at 80% 90%, #1d2029 0, transparent 55%),
+    var(--ui-bg)}
+.stagemeta{position:absolute;left:16px;bottom:12px;font-family:var(--semi);font-weight:600;font-size:11px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ui-text3)}
+.stagemeta b{color:var(--ui-text2);font-weight:700}
+
+.stage-holder{position:relative;width:calc(1080px*var(--s,.5));height:calc(1350px*var(--s,.5));
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.8);border-radius:2px}
+.stage-scaler{position:absolute;top:0;left:0;transform:scale(var(--s,.5));transform-origin:top left}
+
+/* ---------- Panel ---------- */
+.panel{background:var(--ui-panel2);border-left:1px solid var(--ui-line2);overflow-y:auto}
+.grp{border-bottom:1px solid var(--ui-line2);padding:18px 18px 20px}
+.grp h2{margin:0 0 14px;font-family:var(--semi);font-weight:700;font-size:11px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--ui-text3);display:flex;align-items:center;gap:8px}
+.grp h2 .n{color:var(--sig)}
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+label.lbl{display:block;font-size:12px;font-weight:600;color:var(--ui-text2);margin-bottom:6px;letter-spacing:.01em}
+.inp,textarea.inp{width:100%;background:var(--ui-panel);border:1px solid var(--ui-line);border-radius:9px;
+  color:var(--ui-text);font-family:inherit;font-size:14px;padding:9px 11px;resize:vertical}
+.inp:focus,textarea.inp:focus{outline:none;border-color:var(--sig);box-shadow:0 0 0 3px rgba(255,255,0,.12)}
+textarea.inp{min-height:58px;line-height:1.25}
+.row{display:flex;gap:9px}.row>*{flex:1}
+
+/* segmented */
+.seg{display:flex;background:var(--ui-panel);border:1px solid var(--ui-line);border-radius:9px;padding:3px;gap:3px}
+.seg button{flex:1;height:32px;border:none;border-radius:6px;background:transparent;color:var(--ui-text2);
+  font-weight:600;font-size:12.5px;cursor:pointer;letter-spacing:.01em}
+.seg button[aria-pressed="true"]{background:var(--sig);color:#20222c;font-weight:700}
+.seg.small button{font-size:11.5px;height:30px}
+
+/* range */
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:99px;
+  background:var(--ui-line);outline:none;margin:8px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--sig);cursor:pointer;border:3px solid var(--ui-panel2);box-shadow:0 0 0 1px var(--ui-line)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(--ui-panel2);border-radius:50%;background:var(--sig);cursor:pointer}
+.rlabel{display:flex;justify-content:space-between;font-size:12px;color:var(--ui-text2);font-weight:600}
+.rlabel span:last-child{color:var(--ui-text3);font-variant-numeric:tabular-nums}
+
+/* toggle chips row */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--ui-line);background:var(--ui-panel);color:var(--ui-text2);border-radius:8px;
+  padding:7px 11px;font-size:12.5px;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--sig);color:var(--ui-text);box-shadow:inset 0 0 0 1px var(--sig)}
+
+/* photo buttons */
+.photobtns{display:flex;gap:8px;margin-top:9px}
+.thumb{width:52px;height:52px;border-radius:8px;border:1px solid var(--ui-line);object-fit:cover;cursor:pointer;padding:0;background:none}
+.thumb[aria-pressed="true"]{border-color:var(--sig);box-shadow:0 0 0 2px rgba(255,255,0,.25)}
+.filebtn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:8px;
+  border:1px dashed var(--ui-line);background:var(--ui-panel);color:var(--ui-text2);cursor:pointer;font-weight:600;font-size:13px}
+.filebtn:hover{border-color:var(--sig);color:var(--ui-text)}
+.hint{font-size:11.5px;color:var(--ui-text3);margin-top:9px;line-height:1.45}
+
+/* =====================================================================
+   THE CARD — 1080 × 1350 (px reais; NÃO responsivo — é a arte final)
+   ===================================================================== */
+.stage{width:1080px;height:1350px;position:relative;overflow:hidden;background:var(--ink);
+  font-family:var(--font);isolation:isolate}
+.stage *{box-sizing:border-box}
+.stage .photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:50% var(--foco,50%);transform:scale(var(--zoom,1));transform-origin:50% var(--foco,50%)}
+.stage .grade{position:absolute;inset:0;background:var(--ink);mix-blend-mode:color;opacity:var(--grade,.14)}
+.stage .toner{position:absolute;inset:0;background:linear-gradient(180deg,rgba(38,40,50,.0),rgba(38,40,50,.0));opacity:.9}
+.stage .scrim-top{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,21,27,.55) 0,rgba(20,21,27,0) 26%)}
+.stage .scrim-bot{position:absolute;inset:0;
+  background:linear-gradient(0deg,
+    rgba(38,40,50,calc(var(--scrim,.9))) 0%,
+    rgba(38,40,50,calc(var(--scrim,.9) * .82)) 26%,
+    rgba(38,40,50,0) 60%)}
+.stage .grain{position:absolute;inset:0;opacity:0;mix-blend-mode:overlay;pointer-events:none;
+  background-image:var(--grain-img);background-size:260px 260px}
+.stage[data-grain="on"] .grain{opacity:.5}
+
+/* arcs */
+.stage .arc{position:absolute;pointer-events:none;z-index:3}
+.stage .arc svg{display:block;overflow:visible}
+.arc.br{right:-150px;bottom:-150px;width:520px;height:520px}
+.arc.tr{right:-160px;top:-160px;width:460px;height:460px}
+.arc.off{display:none}
+
+/* content */
+.stage .content{position:absolute;inset:0;z-index:4;padding:72px;display:flex;flex-direction:column}
+.stage .topbar{display:flex;align-items:flex-start;justify-content:space-between}
+.stage .logo{height:60px;width:auto;display:block}
+.stage .sym{height:66px;width:auto;display:block;opacity:.95}
+.stage .fill{flex:1}
+.stage .block{max-width:860px}
+.stage .rotulo{font-family:var(--semi);font-weight:600;font-size:27px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--sig);margin:0 0 20px}
+.stage .titulo{font-family:var(--cond);font-weight:900;text-transform:uppercase;color:var(--mist);
+  font-size:104px;line-height:.92;letter-spacing:-.01em;margin:0;white-space:pre-wrap}
+.stage .apoio{font-family:var(--font);font-weight:500;font-size:31px;line-height:1.32;color:var(--grey);
+  margin:26px 0 0;max-width:760px}
+.stage .foot{display:flex;align-items:center;justify-content:space-between;margin-top:44px}
+.stage .handle{font-family:var(--semi);font-weight:600;font-size:27px;letter-spacing:.06em;color:var(--mist)}
+.stage .cta{font-family:var(--semi);font-weight:700;font-size:22px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink);background:var(--sig);padding:13px 22px;border-radius:99px}
+.stage[data-cta="off"] .cta{display:none}
+
+/* ---- Esquema: AMARELO (tarja sólida da marca envolvendo o texto) ---- */
+.stage[data-scheme="amarelo"] .scrim-bot{display:none}
+.stage[data-scheme="amarelo"] .scrim-top{background:linear-gradient(180deg,rgba(20,21,27,.5),rgba(20,21,27,0) 26%)}
+.stage[data-scheme="amarelo"] .content{padding:0}
+.stage[data-scheme="amarelo"] .topbar{padding:72px 72px 0}
+.stage[data-scheme="amarelo"] .block{background:var(--sig);margin:0;padding:54px 72px 60px;max-width:none}
+.stage[data-scheme="amarelo"] .rotulo{color:var(--ink)}
+.stage[data-scheme="amarelo"] .titulo{color:var(--ink)}
+.stage[data-scheme="amarelo"] .apoio{color:#3a3d49}
+.stage[data-scheme="amarelo"] .handle{color:var(--ink)}
+.stage[data-scheme="amarelo"] .cta{background:var(--ink);color:var(--sig)}
+
+/* ---- Esquema: ESCURO (foto tomada por overlay grafite) ---- */
+.stage[data-scheme="escuro"] .grade{opacity:.5}
+.stage[data-scheme="escuro"] .scrim-top{background:linear-gradient(180deg,rgba(27,29,37,.6),rgba(27,29,37,.28) 52%,rgba(27,29,37,0))}
+.stage[data-scheme="escuro"] .scrim-bot{
+  background:linear-gradient(0deg,rgba(27,29,37,.94) 0%,rgba(27,29,37,.74) 46%,rgba(27,29,37,.4) 100%)}
+.stage[data-scheme="escuro"] .titulo{font-size:118px}
+
+/* accessibility */
+:focus-visible{outline:2px solid var(--sig);outline-offset:2px}
+
+@media (max-width:880px){
+  .app{grid-template-columns:1fr;grid-template-rows:1fr auto;height:calc(100% - 58px)}
+  .stageport{padding:18px}
+  .panel{border-left:none;border-top:1px solid var(--ui-line2);max-height:46vh}
+  .appbar .tpl-label{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brandmini"><span class="g3">G<b>3</b></span><small>Treinamento&nbsp;Personalizado</small></div>
+  <span class="tpl-label">Template · Foto + tarja</span>
+  <div class="spacer"></div>
+  <button class="btn ghost" id="resetBtn" title="Restaurar exemplo">Restaurar</button>
+  <button class="btn primary" id="exportBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/></svg>
+    Baixar PNG
+  </button>
+</div>
+
+<div class="app">
+  <!-- PREVIEW -->
+  <div class="stageport" id="port">
+    <div class="stage-holder" id="holder">
+      <div class="stage-scaler">
+        <div class="stage" id="stage" data-scheme="grafite" data-grain="off" data-cta="off">
+          <img class="photo" id="photo" alt="" crossorigin="anonymous">
+          <div class="grade"></div>
+          <div class="scrim-top"></div>
+          <div class="scrim-bot"></div>
+          <div class="grain"></div>
+          <div class="arc br" id="arc">
+            <svg viewBox="0 0 200 200" fill="none">
+              <circle cx="100" cy="100" r="82" stroke="#FFFF00" stroke-width="30" stroke-dasharray="150 108"/>
+            </svg>
+          </div>
+          <div class="content">
+            <div class="topbar">
+              <img class="logo" id="logo" alt="G3">
+              <img class="sym" id="sym" alt="">
+            </div>
+            <div class="fill"></div>
+            <div class="block">
+              <p class="rotulo" id="v-rotulo">MÉTODO G3</p>
+              <h1 class="titulo" id="v-titulo">TREINO É
+CONSTÂNCIA</h1>
+              <p class="apoio" id="v-apoio">Acompanhamento individual, do primeiro agachamento ao seu melhor shape.</p>
+              <div class="foot">
+                <span class="handle" id="v-handle">@g3.caxias</span>
+                <span class="cta" id="v-cta">Agende sua aula</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="stagemeta"><b>1080 × 1350</b> · 4:5 · <span id="scaleInfo">50%</span></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <aside class="panel">
+    <div class="grp">
+      <h2><span class="n">01</span> Foto</h2>
+      <div class="photobtns">
+        <button class="thumb" id="s1" aria-pressed="true"></button>
+        <button class="thumb" id="s2" aria-pressed="false"></button>
+        <label class="filebtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Enviar foto
+          <input type="file" id="file" accept="image/*" hidden>
+        </label>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <div class="rlabel"><span>Enquadramento</span><span id="focoV">50%</span></div>
+        <input type="range" id="foco" min="0" max="100" value="50">
+      </div>
+      <div class="field">
+        <div class="rlabel"><span>Zoom</span><span id="zoomV">1.0×</span></div>
+        <input type="range" id="zoom" min="100" max="170" value="100">
+      </div>
+      <p class="hint">A foto é recortada em 4:5. Ajuste enquadramento e zoom para posicionar o rosto/gesto.</p>
+    </div>
+
+    <div class="grp">
+      <h2><span class="n">02</span> Textos</h2>
+      <div class="field">
+        <label class="lbl" for="rotulo">Rótulo</label>
+        <input class="inp" id="rotulo" value="MÉTODO G3" maxlength="28">
+      </div>
+      <div class="field">
+        <label class="lbl" for="titulo">Título</label>
+        <textarea class="inp" id="titulo" maxlength="60">TREINO É
+CONSTÂNCIA</textarea>
+      </div>
+      <div class="field">
+        <label class="lbl" for="apoio">Apoio</label>
+        <textarea class="inp" id="apoio" maxlength="140">Acompanhamento individual, do primeiro agachamento ao seu melhor shape.</textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label class="lbl" for="handle">Perfil</label>
+          <input class="inp" id="handle" value="@g3.caxias" maxlength="24">
+        </div>
+        <div class="field">
+          <label class="lbl" for="cta">Botão (CTA)</label>
+          <input class="inp" id="cta" value="Agende sua aula" maxlength="22">
+        </div>
+      </div>
+      <div class="chips" style="margin-top:4px">
+        <button class="chip" id="ctaToggle" aria-pressed="false">Mostrar botão CTA</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h2><span class="n">03</span> Esquema de cor</h2>
+      <div class="seg" id="scheme">
+        <button data-v="grafite" aria-pressed="true">Grafite</button>
+        <button data-v="amarelo" aria-pressed="false">Amarelo</button>
+        <button data-v="escuro" aria-pressed="false">Escuro</button>
+      </div>
+      <p class="hint" id="schemeHint">Grafite: degradê escuro na base, título claro, rótulo amarelo. O mais versátil.</p>
+    </div>
+
+    <div class="grp">
+      <h2><span class="n">04</span> Marca &amp; grafismo</h2>
+      <div class="field">
+        <label class="lbl">Logo</label>
+        <div class="seg small" id="logoSel">
+          <button data-v="light" aria-pressed="true">Claro</button>
+          <button data-v="color" aria-pressed="false">Cor</button>
+          <button data-v="preto" aria-pressed="false">Preto</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">Arco (assinatura)</label>
+        <div class="seg small" id="arcSel">
+          <button data-v="br" aria-pressed="true">Inferior D.</button>
+          <button data-v="tr" aria-pressed="false">Superior D.</button>
+          <button data-v="off" aria-pressed="false">Sem arco</button>
+        </div>
+      </div>
+      <div class="chips">
+        <button class="chip" id="symToggle" aria-pressed="true">Símbolo no topo</button>
+        <button class="chip" id="grainToggle" aria-pressed="false">Granulado</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h2><span class="n">05</span> Ajuste fino</h2>
+      <div class="field">
+        <div class="rlabel"><span>Escurecer base (legibilidade)</span><span id="scrimV">90%</span></div>
+        <input type="range" id="scrim" min="40" max="100" value="90">
+      </div>
+      <p class="hint">Aumente se o texto estiver difícil de ler sobre a foto.</p>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+<script>
+/* ============================================================
+   CAMADA 1 — TOKENS DA MARCA G3 (fonte da verdade)
+   Trocar identidade no futuro = mexer só aqui.
+   ============================================================ */
+const G3 = {
+  handle: "@g3.caxias",
+  colors: { sig:"#FFFF00", ink:"#262832", slate:"#484C5F", grey:"#B6B6BF", mist:"#ECECEC" },
+  logos: {
+    light: "assets/logos/G3_Logo_RGB_Horizontal_CinzaClaro.png",
+    color: "assets/logos/G3_Logo_RGB_Horizontal_Color.png",
+    preto: "assets/logos/G3_Logo_RGB_Horizontal_Preto.png",
+  },
+  symbol: {
+    light: "assets/logos/G3_Simbolo_RGB_Horizontal_CinzaClaro.png",
+    color: "assets/logos/G3_Simbolo_RGB_Horizontal_Amarelo.png",
+    preto: "assets/logos/G3_Simbolo_RGB_Horizontal_Preto.png",
+  },
+  samples: ["assets/sample-1.jpg","assets/sample-2.jpg"],
+};
+
+/* grão procedural (SVG feTurbulence) — base64 evita o '#' cru que quebra o html-to-image */
+const GRAIN = "url(\"data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNDAnIGhlaWdodD0nMTQwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9JzEwMCUnIGhlaWdodD0nMTAwJScgZmlsdGVyPSd1cmwoI24pJyBvcGFjaXR5PScwLjU1Jy8+PC9zdmc+\")";
+
+const $ = s => document.querySelector(s);
+const stage = $("#stage");
+const state = {
+  photo: G3.samples[0], sample:0, foco:50, zoom:100,
+  rotulo:"MÉTODO G3", titulo:"TREINO É\nCONSTÂNCIA",
+  apoio:"Acompanhamento individual, do primeiro agachamento ao seu melhor shape.",
+  handle:"@g3.caxias", cta:"Agende sua aula", ctaOn:false,
+  scheme:"grafite", logo:"light", arc:"br", sym:true, grain:false, scrim:90,
+};
+
+const SCHEME_HINT = {
+  grafite:"Grafite: degradê escuro na base, título claro, rótulo amarelo. O mais versátil.",
+  amarelo:"Amarelo: bloco sólido da marca na base segurando o título em grafite. Máximo impacto.",
+  escuro:"Escuro: foto tomada por overlay grafite — ideal para frases de efeito e citações.",
+};
+
+function render(){
+  // fonte / imagem
+  $("#photo").src = state.photo;
+  $("#logo").src = G3.logos[state.logo];
+  $("#sym").src  = G3.symbol[state.logo];
+  $("#sym").style.display = state.sym ? "block" : "none";
+
+  // textos
+  $("#v-rotulo").textContent = state.rotulo;
+  $("#v-titulo").textContent = state.titulo;
+  $("#v-apoio").textContent  = state.apoio;
+  $("#v-apoio").style.display = state.apoio.trim() ? "block" : "none";
+  $("#v-handle").textContent = state.handle;
+  $("#v-cta").textContent    = state.cta;
+
+  // dataset / vars
+  stage.dataset.scheme = state.scheme;
+  stage.dataset.grain  = state.grain ? "on":"off";
+  stage.dataset.cta    = state.ctaOn ? "on":"off";
+  stage.style.setProperty("--foco", state.foco+"%");
+  stage.style.setProperty("--zoom", (state.zoom/100));
+  stage.style.setProperty("--scrim", (state.scrim/100));
+  stage.style.setProperty("--grain-img", state.grain ? GRAIN : "none");
+
+  // arco
+  const arc = $("#arc");
+  arc.className = "arc " + state.arc;
+}
+
+/* ---------- Preview fit ---------- */
+const holder = $("#holder"), port = $("#port");
+function fit(){
+  const availW = port.clientWidth - 60;
+  const availH = port.clientHeight - 60;
+  const s = Math.min(availW/1080, availH/1350, 0.8);
+  holder.style.setProperty("--s", s);
+  $("#scaleInfo").textContent = Math.round(s*100)+"%";
+}
+new ResizeObserver(fit).observe(port);
+window.addEventListener("resize", fit);
+
+/* ---------- Bind controls ---------- */
+function bindText(id, key){ $("#"+id).addEventListener("input", e=>{ state[key]=e.target.value; render(); }); }
+bindText("rotulo","rotulo"); bindText("titulo","titulo"); bindText("apoio","apoio");
+bindText("handle","handle"); bindText("cta","cta");
+
+function bindRange(id, key, fmt, cssShow){
+  const el=$("#"+id), out=$("#"+id+"V");
+  el.addEventListener("input", ()=>{ state[key]=+el.value; if(out) out.textContent=fmt(el.value); render(); });
+}
+bindRange("foco","foco", v=>v+"%");
+bindRange("zoom","zoom", v=>(v/100).toFixed(1)+"×");
+bindRange("scrim","scrim", v=>v+"%");
+
+function seg(id, key, after){
+  $("#"+id).addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    state[key]=b.dataset.v;
+    [...e.currentTarget.children].forEach(x=>x.setAttribute("aria-pressed", x===b));
+    if(after) after(); render();
+  });
+}
+seg("scheme","scheme", ()=>{ $("#schemeHint").textContent = SCHEME_HINT[state.scheme]; });
+seg("logoSel","logo");
+seg("arcSel","arc");
+
+function toggle(id, key, after){
+  $("#"+id).addEventListener("click", e=>{
+    state[key]=!state[key];
+    e.currentTarget.setAttribute("aria-pressed", state[key]);
+    if(after) after(); render();
+  });
+}
+toggle("symToggle","sym");
+toggle("grainToggle","grain");
+toggle("ctaToggle","ctaOn");
+
+/* samples + upload */
+function setSample(i){
+  state.sample=i; state.photo=G3.samples[i];
+  $("#s1").setAttribute("aria-pressed", i===0);
+  $("#s2").setAttribute("aria-pressed", i===1);
+  render();
+}
+$("#s1").style.backgroundImage=`url(${G3.samples[0]})`; $("#s1").style.backgroundSize="cover";
+$("#s2").style.backgroundImage=`url(${G3.samples[1]})`; $("#s2").style.backgroundSize="cover";
+$("#s1").addEventListener("click",()=>setSample(0));
+$("#s2").addEventListener("click",()=>setSample(1));
+$("#file").addEventListener("change", e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ state.photo=rd.result; $("#s1").setAttribute("aria-pressed",false); $("#s2").setAttribute("aria-pressed",false); render(); };
+  rd.readAsDataURL(f);
+});
+
+/* reset */
+$("#resetBtn").addEventListener("click", ()=>{ if(confirm("Restaurar o exemplo? Suas alterações serão perdidas.")) location.reload(); });
+
+/* ---------- Export ---------- */
+$("#exportBtn").addEventListener("click", async function(){
+  const btn=this; const old=btn.innerHTML;
+  btn.disabled=true; btn.textContent="Gerando…";
+  try{
+    // garante fontes carregadas antes de rasterizar
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    const dataUrl = await htmlToImage.toPng(stage, {
+      width:1080, height:1350, pixelRatio:1, cacheBust:true,
+      backgroundColor:G3.colors.ink, style:{ transform:"none" }
+    });
+    const a=document.createElement("a");
+    const slug=(state.titulo||"card").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+      .replace(/\s+/g,"-").replace(/[^a-z0-9-]+/g,"").replace(/-+/g,"-").replace(/(^-|-$)/g,"").slice(0,32) || "card";
+    a.download=`g3-${slug}-1080x1350.png`;
+    a.href=dataUrl; a.click();
+  }catch(err){
+    console.error(err);
+    alert("Não consegui gerar o PNG agora. Detalhe: "+(err&&err.message||err));
+  }finally{
+    btn.disabled=false; btn.innerHTML=old;
+  }
+});
+
+/* init */
+render(); fit();
+</script>
+</body>
+</html>
