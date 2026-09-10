@@ -571,6 +571,28 @@ function downloadFile(dataUrl, filename){
   const a=document.createElement("a"); a.download=filename; a.href=dataUrl;
   document.body.appendChild(a); a.click(); a.remove();
 }
+// Alguns PNGs de logo travam o html-to-image; re-encodar via canvas resolve.
+// Também limita a foto (fotos gigantes de celular estouram o limite do exportador).
+function reencodeImg(img, type, quality, maxDim){
+  return new Promise(resolve=>{
+    try{
+      let w=img.naturalWidth, h=img.naturalHeight;
+      if(!w || !h) return resolve();
+      if(maxDim){ const s=Math.min(1, maxDim/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s); }
+      const c=document.createElement("canvas"); c.width=w; c.height=h;
+      c.getContext("2d").drawImage(img,0,0,w,h);
+      const url=c.toDataURL(type, quality);
+      if(url && url.length>12){ img.onload=()=>resolve(); img.onerror=()=>resolve(); img.src=url; }
+      else resolve();
+    }catch(e){ resolve(); }
+  });
+}
+async function normalizeStageImages(){
+  await reencodeImg($("#logo"), "image/png");
+  await reencodeImg($("#sym"),  "image/png");
+  const photo=$("#photo");
+  if(photo.naturalWidth>1800) await reencodeImg(photo, "image/jpeg", 0.92, 1600);
+}
 async function saveCard(dataUrl, filename){
   // COMPUTADOR: baixa direto o PNG (não abrir "compartilhar" do Windows/macOS)
   if(canDownload && !isMobile){ downloadFile(dataUrl, filename); return; }
@@ -595,6 +617,7 @@ $("#exportBtn").addEventListener("click", async function(){
   btn.disabled=true; btn.textContent="Gerando…";
   try{
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    await normalizeStageImages();   // evita travar o export com certos PNGs/fotos grandes
     const dataUrl = await htmlToImage.toPng(stage, {
       width:1080, height:1350, pixelRatio:1, cacheBust:true,
       backgroundColor:G3.colors.ink, style:{ transform:"none" }
