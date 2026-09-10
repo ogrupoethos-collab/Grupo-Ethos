@@ -184,6 +184,14 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:3px solid var(
 /* accessibility */
 :focus-visible{outline:2px solid var(--sig);outline-offset:2px}
 
+/* overlay de salvar (fallback iOS: segurar a imagem p/ salvar) */
+.saveov{position:fixed;inset:0;z-index:999;background:rgba(10,11,15,.92);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px}
+.saveov img{max-width:min(92vw,460px);max-height:74vh;border-radius:8px;box-shadow:0 20px 60px -20px #000}
+.saveov p{margin:0;color:#f2f3f5;font-size:15px;text-align:center;max-width:340px;line-height:1.5}
+.saveov p b{color:var(--sig)}
+.saveov .x{margin-top:2px}
+
 @media (max-width:880px){
   .app{grid-template-columns:1fr;grid-template-rows:1fr auto;height:calc(100% - 58px)}
   .stageport{padding:18px}
@@ -542,21 +550,57 @@ $("#file").addEventListener("change", async e=>{
 $("#resetBtn").addEventListener("click", ()=>{ if(confirm("Restaurar o exemplo? Suas alterações serão perdidas.")) location.reload(); });
 
 /* ---------- Export ---------- */
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+  (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1); // iPad iPadOS
+const canDownload = "download" in document.createElement("a");
+
+function showSaveOverlay(dataUrl){
+  const ov=document.createElement("div"); ov.className="saveov";
+  const img=new Image(); img.src=dataUrl; img.alt="Card G3";
+  const p=document.createElement("p");
+  p.innerHTML="Segure a imagem e toque em <b>“Salvar em Fotos”</b> (ou “Adicionar às Fotos”).";
+  const x=document.createElement("button"); x.className="btn ghost x"; x.textContent="Fechar";
+  x.onclick=()=>ov.remove();
+  ov.appendChild(img); ov.appendChild(p); ov.appendChild(x);
+  ov.addEventListener("click",e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+async function saveCard(dataUrl, filename){
+  // 1) compartilhamento nativo — melhor no celular (Salvar em Fotos / enviar ao Instagram)
+  try{
+    const blob=await (await fetch(dataUrl)).blob();
+    const file=new File([blob], filename, {type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:"Card G3"});
+      return;
+    }
+  }catch(e){
+    if(e && e.name==="AbortError") return; // usuário fechou o compartilhamento
+    // segue para os próximos métodos
+  }
+  // 2) download direto (desktop/Android com suporte)
+  if(canDownload && !isIOS){
+    const a=document.createElement("a"); a.download=filename; a.href=dataUrl;
+    document.body.appendChild(a); a.click(); a.remove();
+    return;
+  }
+  // 3) fallback (iOS sem compartilhamento): mostra a imagem p/ salvar manualmente
+  showSaveOverlay(dataUrl);
+}
+
 $("#exportBtn").addEventListener("click", async function(){
   const btn=this; const old=btn.innerHTML;
   btn.disabled=true; btn.textContent="Gerando…";
   try{
-    // garante fontes carregadas antes de rasterizar
     if(document.fonts && document.fonts.ready) await document.fonts.ready;
     const dataUrl = await htmlToImage.toPng(stage, {
       width:1080, height:1350, pixelRatio:1, cacheBust:true,
       backgroundColor:G3.colors.ink, style:{ transform:"none" }
     });
-    const a=document.createElement("a");
     const slug=(state.titulo||"card").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
       .replace(/\s+/g,"-").replace(/[^a-z0-9-]+/g,"").replace(/-+/g,"-").replace(/(^-|-$)/g,"").slice(0,32) || "card";
-    a.download=`g3-${slug}-1080x1350.png`;
-    a.href=dataUrl; a.click();
+    await saveCard(dataUrl, `g3-${slug}-1080x1350.png`);
   }catch(err){
     console.error(err);
     alert("Não consegui gerar o PNG agora. Detalhe: "+(err&&err.message||err));
